@@ -83,11 +83,25 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.textViewPrevious:
-
+                if(tracker > 0){
+                    mViewPager.setCurrentItem(--tracker);
+                }
+                if(tracker == 0){
+                    mPrev.setEnabled(false);
+                }
                 break;
 
             case R.id.textViewNext:
-
+                if(tracker >= 0 && tracker < 2){
+                    mViewPager.setCurrentItem(++tracker);
+                    mNext.setText("Next");
+                }
+                if(tracker == 2){
+                    mNext.setText("Done");
+                }
+                if(tracker > 0){
+                    mPrev.setEnabled(true);
+                }
                 break;
         }
     }
