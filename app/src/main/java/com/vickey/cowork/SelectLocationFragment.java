@@ -3,7 +3,6 @@ package com.vickey.cowork;
 import android.app.Activity;
 import android.content.Context;
 import android.location.Geocoder;
-import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;

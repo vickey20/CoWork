@@ -1,49 +1,46 @@
 package com.vickey.cowork;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
+import android.app.TimePickerDialog;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
-/**
- * A simple {@link Fragment} subclass.
- * Activities that contain this fragment must implement the
- * {@link DetailsFragment.OnFragmentInteractionListener} interface
- * to handle interaction events.
- * Use the {@link DetailsFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class DetailsFragment extends Fragment {
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
-
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private String TAG = "DetailsFragment";
 
     private OnFragmentInteractionListener mListener;
 
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment DetailsFragment.
-     */
-    // TODO: Rename and change types and number of parameters
+    Spinner mSpinnerActivity, mSpinnerPeople;
+    EditText mEditTextDescription;
+    TextView mTextViewTime, mTextViewDate;
+
+    String[] mActivities = {"Reading", "Writing", "Coding", "Writing assignments", "Painting"}; //for now, will update later
+    String[] mPeople = {"1", "2", "3", "4", "5"};
+
     public static DetailsFragment newInstance(String param1, String param2) {
         DetailsFragment fragment = new DetailsFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
         return fragment;
     }
 
@@ -54,17 +51,77 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_details, container, false);
+        View v =  inflater.inflate(R.layout.fragment_details, container, false);
+
+        mSpinnerActivity = (Spinner) v.findViewById(R.id.spinnerActivity);
+        mSpinnerPeople = (Spinner) v.findViewById(R.id.spinnerPeople);
+        mEditTextDescription = (EditText) v.findViewById(R.id.editTextDescription);
+        mTextViewTime = (TextView) v.findViewById(R.id.textViewTime);
+        mTextViewDate = (TextView) v.findViewById(R.id.textViewDate);
+
+        mTextViewTime.setOnClickListener(new TextView.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment timeFragment = new StartTimePicker();
+                timeFragment.show(getActivity().getFragmentManager(), "start_time_picker");
+            }
+        });
+        mTextViewDate.setOnClickListener(new TextView.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DialogFragment dialogFragment = new StartDatePicker();
+                dialogFragment.show(getActivity().getFragmentManager(), "start_date_picker");
+            }
+        });
+
+        mSpinnerActivity.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "selected activity: " + mActivities[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        mSpinnerPeople.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "selected num people: " + mPeople[position]);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        ArrayAdapter<String> adapterActivity = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, mActivities);
+        mSpinnerActivity.setAdapter(adapterActivity);
+
+        ArrayAdapter<String> adapterPeople = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, mPeople);
+        mSpinnerPeople.setAdapter(adapterPeople);
+
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        mTextViewTime.setText(sdf.format(c.getTime()));
+        sdf = new SimpleDateFormat("EEE, MMM dd");
+        mTextViewDate.setText(sdf.format(c.getTime()));
+
     }
 
     /**
@@ -74,8 +131,6 @@ public class DetailsFragment extends Fragment {
         DetailsFragment f = new DetailsFragment();
         return f;
     }
-
-
 
     // TODO: Rename method, update argument and hook method into UI event
     public void onButtonPressed(Uri uri) {
@@ -101,19 +156,92 @@ public class DetailsFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
         public void onFragmentInteraction(Uri uri);
     }
 
+    class StartTimePicker extends DialogFragment implements TimePickerDialog.OnTimeSetListener{
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // TODO Auto-generated method stub
+
+            Calendar c = Calendar.getInstance();
+            int hour = c.get(Calendar.HOUR_OF_DAY);
+            int minute = c.get(Calendar.MINUTE);
+
+            // Use the current date as the default date in the picker
+            TimePickerDialog dialog = new TimePickerDialog(getActivity(), this, hour, minute, true);
+
+            return dialog;
+
+        }
+
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            // TODO Auto-generated method stub
+            updateTimeField( hourOfDay, minute );
+
+            Calendar calNow = Calendar.getInstance();
+            Calendar calSet = (Calendar) calNow.clone();
+
+            calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            calSet.set(Calendar.MINUTE, minute);
+            calSet.set(Calendar.SECOND, 0);
+            calSet.set(Calendar.MILLISECOND, 0);
+
+            if (calSet.compareTo(calNow) <= 0) {
+
+                calSet.add(Calendar.DATE, 1);
+            }
+        }
+    }
+
+    class StartDatePicker extends DialogFragment implements DatePickerDialog.OnDateSetListener{
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // TODO Auto-generated method stub
+
+            Calendar c = Calendar.getInstance();
+            int startYear = c.get(Calendar.YEAR);
+            int startMonth = c.get(Calendar.MONTH);
+            int startDay = c.get(Calendar.DAY_OF_MONTH);
+
+            // Use the current date as the default date in the picker
+            DatePickerDialog dialog = new DatePickerDialog(getActivity(), this, startYear, startMonth, startDay);
+
+            return dialog;
+
+        }
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear,
+                              int dayOfMonth) {
+            // TODO Auto-generated method stub
+            updateDateField(year, monthOfYear, dayOfMonth);
+        }
+    }
+
+    public void updateDateField(int startYear, int startMonth, int startDay) {
+
+        try {
+            SimpleDateFormat initial = new SimpleDateFormat("MM-dd-yyyy", Locale.US);
+            Date date = initial.parse("" + startMonth + "-" + startDay + "-" + startYear +"");
+
+            SimpleDateFormat finalFormat = new SimpleDateFormat("EEE, MMM dd", Locale.US);
+
+            String dateStr = finalFormat.format(date);
+
+            Log.d("MainActivity", "date: " + dateStr);
+            mTextViewDate.setText(dateStr);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+    public void updateTimeField(int hour, int minute) {
+
+        mTextViewTime.setText("" + hour + ":" + minute);
+    }
 }
