@@ -26,10 +26,12 @@ public class Constants {
         static final String KEY_USER_BIRTHDAY = "USER_BIRTHDAY";
         static final String KEY_USER_LOGIN_TYPE = "USER_LOGIN_TYPE";
         static final String KEY_PERMISSION_ACCESS_FINE_LOCATION = "PERMISSION_ACCESS_FINE_LOCATION";
+        static final String KEY_CHANGE_LOCATION_SETTINGS = "CHANGE_LOCATION_SETTINGS";
     }
 
     class Permissions{
         static final int PERMISSION_UNGRANTED = 0;
         static final int PERMISSION_GRANTED = 1;
+        static final int NEVER = 2;
     }
 }

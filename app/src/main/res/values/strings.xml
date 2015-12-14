@@ -39,6 +39,9 @@
     <string name="label_time">Choose a time</string>
     <string name="label_date">Choose a date</string>
 
+    <!-- Strings related to SelectLocationFragment -->
+    <string name="toast_drop_pin_message">Press and hold on map to drop pin</string>
+
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
