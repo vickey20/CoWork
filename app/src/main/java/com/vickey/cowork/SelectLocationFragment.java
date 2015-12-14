@@ -1,25 +1,51 @@
 package com.vickey.cowork;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
+import android.content.IntentSender;
+import android.content.pm.PackageManager;
+import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Vibrator;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 
-public class SelectLocationFragment extends Fragment {
+import java.io.IOException;
+import java.util.ArrayList;
+
+public class SelectLocationFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener, LocationListener{
+
+    private final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     private String TAG = "SelectLocationFragment";
-    private OnFragmentInteractionListener mListener;
+
+    private SelectLocationListener mListener;
+
+    private SupportMapFragment mSupportMapFragment;
 
     Context mContext;
 
@@ -27,6 +53,10 @@ public class SelectLocationFragment extends Fragment {
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
     Geocoder coder;
+
+    private Marker mMarker;
+
+    private Vibrator mVibrator;
 
     public SelectLocationFragment() {
 
@@ -37,12 +67,12 @@ public class SelectLocationFragment extends Fragment {
         super.onCreate(savedInstanceState);
         mContext = getActivity();
         coder = new Geocoder(mContext);
+        mVibrator = (Vibrator) getActivity().getSystemService(mContext.VIBRATOR_SERVICE);
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_select_location, container, false);
     }
 
@@ -50,60 +80,112 @@ public class SelectLocationFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        setUpMapIfNeeded();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(mContext)
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API)
+                .build();
+
+        // Create the LocationRequest object
+        mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(10 * 1000)        // 10 seconds, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        mContext = getActivity();
+        mContext = getContext();
         coder = new Geocoder(mContext);
+
         setUpMapIfNeeded();
+        mGoogleApiClient.connect();
     }
 
     @Override
     public void onPause() {
         super.onPause();
 
-    }
-
-    /**
-     * Sets up the map if it is possible to do so (i.e., the Google Play services APK is correctly
-     * installed) and the map has not already been instantiated.. This will ensure that we only ever
-     * call {@link #setUpMap()} once when {@link #mMap} is not null.
-     * <p/>
-     * If it isn't installed {@link SupportMapFragment} (and
-     * {@link com.google.android.gms.maps.MapView MapView}) will show a prompt for the user to
-     * install/update the Google Play services APK on their device.
-     * <p/>
-     * A user can return to this FragmentActivity after following the prompt and correctly
-     * installing/updating/enabling the Google Play services. Since the FragmentActivity may not
-     * have been completely destroyed during this process (it is likely that it would only be
-     * stopped or paused), {@link #onCreate(Bundle)} may not be called again so we should call this
-     * method in {@link #onResume()} to guarantee that it will be called.
-     */
-    private void setUpMapIfNeeded() {
-        // Do a null check to confirm that we have not already instantiated the map.
-        if (mMap == null) {
-
-            SupportMapFragment mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-
-            Log.d(TAG, "map: " + mapFragment);
-            // Try to obtain the map from the SupportMapFragment.
-            mMap = mapFragment.getMap();
-            // Check if we were successful in obtaining the map.
-            if (mMap != null) {
-                setUpMap();
-            }
+        if (mGoogleApiClient.isConnected()) {
+            LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+            mGoogleApiClient.disconnect();
         }
     }
 
-    /**
-     * This is where we can add markers or lines, add listeners or move the camera. In this case, we
-     * just add a marker near Africa.
-     * <p/>
-     * This should only be called once and when we are sure that {@link #mMap} is not null.
-     */
+
+    private void setUpMapIfNeeded() {
+
+        FragmentManager fm = getChildFragmentManager();
+        mSupportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
+        if (mSupportMapFragment == null) {
+            mSupportMapFragment = SupportMapFragment.newInstance();
+            fm.beginTransaction().replace(R.id.map, mSupportMapFragment).commit();
+        }
+
+        // Do a null check to confirm that we have not already instantiated the map.
+        if (mMap == null && mSupportMapFragment != null) {
+
+            Log.d(TAG, "map: " + mSupportMapFragment);
+
+            // Try to obtain the map from the SupportMapFragment.
+            mMap = mSupportMapFragment.getMap();
+            // Check if we were successful in obtaining the map.
+            if (mMap != null) {
+                setUpMap();
+        }
+        }
+    }
+
+
     private void setUpMap() {
+        mMap.setMyLocationEnabled(true);
+        mMap.getUiSettings().setMyLocationButtonEnabled(true);
+        mMap.getUiSettings().setAllGesturesEnabled(true);
+        /*mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
+            @Override
+            public void onMyLocationChange(Location location) {
+                LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+                mMarker = mMap.addMarker(new MarkerOptions().position(loc));
+                if (mMap != null) {
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
+                }
+            }
+        });*/
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                mMap.clear();
+            }
+        });
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+
+                Geocoder coder = new Geocoder(mContext);
+                try {
+                    ArrayList<Address> addresses = (ArrayList<Address>) coder.getFromLocation(latLng.latitude,latLng.longitude,1);
+                    String name = "";
+                    for(Address add : addresses){
+                        name = add.toString();
+                    }
+
+                    if(mVibrator != null){
+                        mVibrator.vibrate(50);
+                    }
+
+                    Log.d(TAG, "address: " + name);
+                    mMap.clear();
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(name)).setDraggable(true);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
         mMap.setMyLocationEnabled(true);
     }
@@ -116,18 +198,11 @@ public class SelectLocationFragment extends Fragment {
         return f;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (SelectLocationListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -140,19 +215,65 @@ public class SelectLocationFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
-    public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        public void onFragmentInteraction(Uri uri);
+    @Override
+    public void onConnected(Bundle bundle) {
+
+        Log.d(TAG, "onConnected");
+
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+
+        if (location == null) {
+            LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+        }
+        else {
+            handleNewLocation(location);
+        };
+    }
+
+    private void handleNewLocation(Location location) {
+        Log.d(TAG, location.toString());
+        LatLng position = new LatLng(location.getLatitude(),location.getLongitude());
+        mMap.setMyLocationEnabled(true);
+        //mMap.addMarker(new MarkerOptions().position(position).title("Your location")).setDraggable();
+        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        Log.d(TAG, "onConnectedSuspended");
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+        Log.d(TAG, "onConnectionFailed");
+        if (connectionResult.hasResolution()) {
+            try {
+                // Start an Activity that tries to resolve the error
+                connectionResult.startResolutionForResult(getActivity(), CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                e.printStackTrace();
+            }
+        } else {
+            Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Log.d(TAG, "onLocationChanged");
+        // Create the LocationRequest object
+       /* mLocationRequest = LocationRequest.create()
+                .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+                .setInterval(10 * 1000)        // 10 seconds, in milliseconds
+                .setFastestInterval(1 * 1000); // 1 second, in milliseconds*/
+
+        handleNewLocation(location);
+    }
+
+    public interface SelectLocationListener {
+        public void onSelectLocationEvent(int code);
     }
 
 }

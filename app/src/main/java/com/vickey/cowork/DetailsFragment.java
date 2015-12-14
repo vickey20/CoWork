@@ -5,10 +5,13 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,9 +20,11 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -29,15 +34,16 @@ import java.util.Locale;
 
 public class DetailsFragment extends Fragment {
     private String TAG = "DetailsFragment";
-
+    private final int CHAR_COUNT = 200;
     private OnFragmentInteractionListener mListener;
 
-    Spinner mSpinnerActivity, mSpinnerPeople;
+    Spinner mSpinnerActivity; //mSpinnerPeople;
     EditText mEditTextDescription;
-    TextView mTextViewTime, mTextViewDate;
+    TextView mTextViewTime, mTextViewDate, mTextViewCharCount;
+    RadioGroup mRadioGroup;
 
+    int mCharCount = 0;
     String[] mActivities = {"Reading", "Writing", "Coding", "Writing assignments", "Painting"}; //for now, will update later
-    String[] mPeople = {"1", "2", "3", "4", "5"};
 
     public static DetailsFragment newInstance(String param1, String param2) {
         DetailsFragment fragment = new DetailsFragment();
@@ -59,10 +65,38 @@ public class DetailsFragment extends Fragment {
         View v =  inflater.inflate(R.layout.fragment_details, container, false);
 
         mSpinnerActivity = (Spinner) v.findViewById(R.id.spinnerActivity);
-        mSpinnerPeople = (Spinner) v.findViewById(R.id.spinnerPeople);
         mEditTextDescription = (EditText) v.findViewById(R.id.editTextDescription);
+        mTextViewCharCount = (TextView) v.findViewById(R.id.textViewCharCount);
         mTextViewTime = (TextView) v.findViewById(R.id.textViewTime);
+        mRadioGroup = (RadioGroup) v.findViewById(R.id.radioGroup);
         mTextViewDate = (TextView) v.findViewById(R.id.textViewDate);
+
+        return v;
+    }
+
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        mTextViewCharCount.setText(String.valueOf(CHAR_COUNT));
+
+        mEditTextDescription.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                mCharCount = s.length();
+                mTextViewCharCount.setText(String.valueOf(CHAR_COUNT - mCharCount));
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
+            }
+        });
 
         mTextViewTime.setOnClickListener(new TextView.OnClickListener() {
             @Override
@@ -71,6 +105,7 @@ public class DetailsFragment extends Fragment {
                 timeFragment.show(getActivity().getFragmentManager(), "start_time_picker");
             }
         });
+
         mTextViewDate.setOnClickListener(new TextView.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -91,30 +126,15 @@ public class DetailsFragment extends Fragment {
             }
         });
 
-        mSpinnerPeople.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+        mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                Log.d(TAG, "selected num people: " + mPeople[position]);
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                Log.d(TAG, "selected radio: " + checkedId);
             }
         });
 
-        return v;
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
         ArrayAdapter<String> adapterActivity = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, mActivities);
         mSpinnerActivity.setAdapter(adapterActivity);
-
-        ArrayAdapter<String> adapterPeople = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, mPeople);
-        mSpinnerPeople.setAdapter(adapterPeople);
 
         Calendar c = Calendar.getInstance();
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");

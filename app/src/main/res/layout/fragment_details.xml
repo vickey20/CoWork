@@ -29,7 +29,15 @@
             android:layout_marginTop="@dimen/activity_vertical_margin"
             android:gravity="top|left"
             android:textSize="18dp"
+            android:maxLength="200"
             android:hint="@string/label_description"/>
+
+        <TextView
+            android:id="@+id/textViewCharCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="5dp"
+            android:textSize="12dp"/>
 
         <TextView
             android:layout_width="match_parent"
@@ -42,8 +50,44 @@
             android:id="@+id/spinnerPeople"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:visibility="gone"
             android:layout_marginTop="@dimen/activity_vertical_margin">
         </Spinner>
+
+        <RadioGroup
+            android:id="@+id/radioGroup"
+            android:layout_margin="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="5">
+
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_one"
+                android:id="@+id/radioButton1" />
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_two"
+                android:id="@+id/radioButton2" />
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_three"
+                android:id="@+id/radioButton3" />
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_four"
+                android:id="@+id/radioButton4" />
+            <RadioButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/label_five"
+                android:id="@+id/radioButton5" />
+        </RadioGroup>
 
         <TextView
             android:layout_width="match_parent"
@@ -54,9 +98,11 @@
 
         <TextView
             android:id="@+id/textViewTime"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:drawableRight="@drawable/com_facebook_tooltip_black_bottomnub"
+            android:drawablePadding="20dp"
             android:textSize="18dp"
             android:clickable="true"
             android:focusable="true"
@@ -73,9 +119,11 @@
 
         <TextView
             android:id="@+id/textViewDate"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:drawableRight="@drawable/com_facebook_tooltip_black_bottomnub"
             android:layout_marginLeft="@dimen/activity_horizontal_margin"
+            android:drawablePadding="20dp"
             android:textSize="18dp"
             android:focusable="true"
             android:background="?attr/selectableItemBackgroundBorderless"

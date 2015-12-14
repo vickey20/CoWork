@@ -23,7 +23,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     static int USER_ID;
 
     //Shared preferences to retrieve userID
-    SharedPreferences sharedPreferences;
+    SharedPreferences mSharedPreferences;
 
     //UI widgets
     RecyclerView mRecyclerView;
@@ -40,8 +40,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
 
         //Get userID from preferences
-        sharedPreferences = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
-        USER_ID = sharedPreferences.getInt(Constants.PreferenceKeys.KEY_USER_ID, 0);
+        mSharedPreferences = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
+        USER_ID = mSharedPreferences.getInt(Constants.PreferenceKeys.KEY_USER_ID, 0);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         mScrollView = (ScrollView) findViewById(R.id.scrollViewCoworkingSpace);

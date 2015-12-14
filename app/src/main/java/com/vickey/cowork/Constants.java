@@ -25,5 +25,11 @@ public class Constants {
         static final String KEY_USER_EMAIL = "USER_EMAIL";
         static final String KEY_USER_BIRTHDAY = "USER_BIRTHDAY";
         static final String KEY_USER_LOGIN_TYPE = "USER_LOGIN_TYPE";
+        static final String KEY_PERMISSION_ACCESS_FINE_LOCATION = "PERMISSION_ACCESS_FINE_LOCATION";
+    }
+
+    class Permissions{
+        static final int PERMISSION_UNGRANTED = 0;
+        static final int PERMISSION_GRANTED = 1;
     }
 }

@@ -19,15 +19,23 @@
 
     <!-- Login shared preference file name -->
     <string name="login_shared_pref">LoginSharedPref</string>
+    <string name="create_cowork_shared_pref">CreateCoworkSharedPref</string>
 
     <!-- Strings related to HomeActivity -->
     <string name="create_cowork">Create</string>
     <string name="discover_cowork">Discover!</string>
+    <string name="welcome_text1">Your coworking spaces will show up here</string>
+    <string name="welcome_text2">Create now or discover one near you!</string>
 
     <!-- Strings related to DetailsFragment -->
     <string name="label_choose_activity">So, what are you doing?</string>
     <string name="label_description">Tell us more about it!</string>
     <string name="label_num_people">Max # of Co-Workers</string>
+    <string name="label_one">One</string>
+    <string name="label_two">Two</string>
+    <string name="label_three">Three</string>
+    <string name="label_four">Four</string>
+    <string name="label_five">Five</string>
     <string name="label_time">Choose a time</string>
     <string name="label_date">Choose a date</string>
 

@@ -2,13 +2,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:id="@+id/map">
 
+<!--
     <fragment
         android:id="@+id/map"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:context="com.vickey.cowork.CreateActivity"
         android:name="com.google.android.gms.maps.SupportMapFragment" />
+-->
 
 </LinearLayout>
