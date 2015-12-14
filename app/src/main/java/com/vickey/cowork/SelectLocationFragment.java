@@ -12,6 +12,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
@@ -71,7 +72,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     Geocoder mCoder;
 
     private Marker mMarker;
-    private boolean mIsStartup = false;
+    private boolean mIsStartup = true;
 
     private Vibrator mVibrator;
 
@@ -256,7 +257,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             @Override
             public void onMyLocationChange(Location location) {
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
-                mMap.addMarker(new MarkerOptions().position(loc));
+                //mMap.addMarker(new MarkerOptions().position(loc));
                 if (mMap != null && mIsStartup == true) {
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
                     mIsStartup = false;
@@ -275,19 +276,22 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
                 Geocoder coder = new Geocoder(mContext);
                 try {
-                    ArrayList<Address> addresses = (ArrayList<Address>) coder.getFromLocation(latLng.latitude,latLng.longitude,1);
-                    String name = "";
-                    for(Address add : addresses){
-                        name = add.toString();
-                    }
+                    ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude,latLng.longitude,1);
 
                     if(mVibrator != null){
                         mVibrator.vibrate(50);
                     }
 
-                    Log.d(TAG, "address: " + name);
+                    Address addr = addressList.get(0);
+                    Log.d(TAG, "address: " + addr);
+                    String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1) + ", " + addr.getAddressLine(2);
+                    Log.d(TAG, "address fine: " + address);
+                    Log.d(TAG, "lat lng: " + latLng.latitude + ", " + latLng.longitude);
+
+                    new BackgroundTask().execute(latLng);
+
                     mMap.clear();
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(name)).setDraggable(true);
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(address)).setDraggable(true);
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
 
                 } catch (IOException e) {
@@ -300,6 +304,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
         Toast.makeText(mContext, getString(R.string.toast_drop_pin_message), Toast.LENGTH_LONG).show();
     }
+
 
     /**
      * Create a new instance of SelectLocationFragment
@@ -378,6 +383,21 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
     public interface SelectLocationListener {
         public void onSelectLocationEvent(int code);
+    }
+
+    class BackgroundTask extends AsyncTask<LatLng, Void, String>{
+
+        @Override
+        protected String doInBackground(LatLng... params) {
+            Helper helper = new Helper();
+            String resp = helper.getPlaceFromLocation(params[0]);
+            return resp;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+        }
     }
 
 }

@@ -5,6 +5,8 @@ package com.vickey.cowork;
  */
 public class Constants {
 
+    public static final String API_KEY = "AIzaSyBzu2n3k9Nj3utGpBMcz-kBmFYEqBn_egM";
+
     class Login{
         static final int LOGIN_FALSE = 0;
         static final int LOGIN_TRUE = 1;
@@ -33,5 +35,9 @@ public class Constants {
         static final int PERMISSION_UNGRANTED = 0;
         static final int PERMISSION_GRANTED = 1;
         static final int NEVER = 2;
+    }
+
+    class Urls{
+        static final String API_GET_PLACE_FROM_LOCATION = "https://www.maps.googleapis.com/maps/api/place/nearbysearch/json?";
     }
 }
