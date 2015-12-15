@@ -17,6 +17,7 @@
             android:layout_height="match_parent">
 
             <android.support.v7.widget.CardView
+                android:id="@+id/cardViewStartup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 card_view:cardCornerRadius="2dp"
@@ -25,7 +26,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:background="?attr/selectableItemBackground"
-                android:visibility="gone">
+                android:visibility="visible">
 
                 <LinearLayout
                     android:layout_width="match_parent"

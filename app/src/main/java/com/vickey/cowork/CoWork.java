@@ -6,29 +6,33 @@ package com.vickey.cowork;
 public class CoWork {
 
     int coworkID;
-    int creatorID;
+    String creatorID;
     String attendeesID;
-    String location;
     int numAttendees;
+    String locationName;
+    String locationLat;
+    String locationLng;
     String time;
     String date;
     int activityType;
     String description;
-    String isFinished;
-    String canceled;
+    int finished;
+    int canceled;
 
     CoWork(){
         coworkID = 0;
-        creatorID = 0;
+        creatorID = "";
         attendeesID = "";
-        location = "";
+        locationName = "";
+        locationLat = "";
+        locationLng = "";
         numAttendees = 0;
         time = "";
         date = "";
         activityType = 0;
         description = "";
-        isFinished = "";
-        canceled = "";
+        finished = 0;
+        canceled = 0;
     }
 
     public int getActivityType() {
@@ -46,11 +50,11 @@ public class CoWork {
         this.coworkID = coworkID;
     }
 
-    public int getCreatorID() {
+    public String getCreatorID() {
         return creatorID;
     }
 
-    public void setCreatorID(int creatorID) {
+    public void setCreatorID(String creatorID) {
         this.creatorID = creatorID;
     }
 
@@ -70,11 +74,11 @@ public class CoWork {
         return attendeesID;
     }
 
-    public void setCanceled(String canceled) {
+    public void setCanceled(int canceled) {
         this.canceled = canceled;
     }
 
-    public String getCanceled() {
+    public int getCanceled() {
         return canceled;
     }
 
@@ -94,20 +98,36 @@ public class CoWork {
         this.description = description;
     }
 
-    public String getIsFinished() {
-        return isFinished;
+    public int getFinished() {
+        return finished;
     }
 
-    public void setIsFinished(String isFinished) {
-        this.isFinished = isFinished;
+    public void setFinished(int finished) {
+        this.finished = finished;
     }
 
-    public String getLocation() {
-        return location;
+    public String getLocationName() {
+        return locationName;
     }
 
-    public void setLocation(String location) {
-        this.location = location;
+    public void setLocationName(String locationName) {
+        this.locationName = locationName;
+    }
+
+    public String getLocationLat() {
+        return locationLat;
+    }
+
+    public void setLocationLat(String locationLat) {
+        this.locationLat = locationLat;
+    }
+
+    public String getLocationLng() {
+        return locationLng;
+    }
+
+    public void setLocationLng(String locationLng) {
+        this.locationLng = locationLng;
     }
 
     public String getTime() {

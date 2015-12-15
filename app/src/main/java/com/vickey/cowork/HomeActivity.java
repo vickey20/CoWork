@@ -17,13 +17,15 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
 
+import java.util.ArrayList;
+
 public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
     //userID should be accessible everywhere.
-    static int USER_ID;
+    static String USER_ID;
 
     //Shared preferences to retrieve userID
-    SharedPreferences mSharedPreferences;
+    SharedPreferences mLoginSharedPref, mDatabaseSharedPref;
 
     //UI widgets
     RecyclerView mRecyclerView;
@@ -33,6 +35,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     LinearLayout mLinearRecycler;
     Button mButtonCreate;
     Button mButtonDiscover;
+    CardView mCardViewStartup;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,9 +43,19 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_home);
 
         //Get userID from preferences
-        mSharedPreferences = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
-        USER_ID = mSharedPreferences.getInt(Constants.PreferenceKeys.KEY_USER_ID, 0);
+        mLoginSharedPref = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
+        USER_ID = mLoginSharedPref.getString(Constants.PreferenceKeys.KEY_USER_ID, "");
 
+        mDatabaseSharedPref = getSharedPreferences(getString(R.string.database_shared_pref), Context.MODE_PRIVATE);
+        if(mDatabaseSharedPref.getInt(Constants.PreferenceKeys.DATABASE_CREATION_FLAG, 0) == Constants.MyDatabase.DATABASE_NOT_CREATED){
+            HelperClass helperClass = new HelperClass(HomeActivity.this);
+            if(helperClass.initializeDatabase() == 1){
+                SharedPreferences.Editor editor = mDatabaseSharedPref.edit();
+                editor.putInt(Constants.PreferenceKeys.DATABASE_CREATION_FLAG, Constants.MyDatabase.DATABASE_CREATED);
+            }
+        }
+
+        mCardViewStartup = (CardView) findViewById(R.id.cardViewStartup);
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         mScrollView = (ScrollView) findViewById(R.id.scrollViewCoworkingSpace);
 
@@ -62,9 +75,25 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        mAdapter = new CardViewAdapter();
-        mRecyclerView.setAdapter(mAdapter);
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        HelperClass helperClass = new HelperClass(HomeActivity.this);
+        ArrayList<CoWork> coWorks = helperClass.getUserCoworkList();
+
+        if(coWorks.size() > 0){
+            mAdapter = new CardViewAdapter(HomeActivity.this, coWorks);
+            mRecyclerView.setAdapter(mAdapter);
+            mCardViewStartup.setVisibility(CardView.GONE);
+            mRecyclerView.setVisibility(RecyclerView.VISIBLE);
+        }
+        else{
+            mRecyclerView.setVisibility(RecyclerView.GONE);
+            mCardViewStartup.setVisibility(CardView.VISIBLE);
+        }
     }
 
     @Override
@@ -75,7 +104,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()){
+            case R.id.profile:
+                Intent i = new Intent(HomeActivity.this, ViewProfileActivity.class);
+                startActivity(i);
+                return true;
+        }
+
         return super.onOptionsItemSelected(item);
+
     }
 
     @Override

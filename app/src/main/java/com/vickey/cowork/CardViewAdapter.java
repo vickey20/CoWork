@@ -1,5 +1,6 @@
 package com.vickey.cowork;
 
+import android.content.Context;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,30 +15,12 @@ import java.util.ArrayList;
  */
 public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHolder> {
 
-    ArrayList<CoWork> arrayList;
+    ArrayList<CoWork> mCoworkList;
+    Context mContext;
 
-    CardViewAdapter(){
-
-        arrayList = new ArrayList<CoWork>();
-
-        CoWork coWork = new CoWork();
-
-        coWork.setLocation("Location 1");
-        coWork.setActivityType(1);
-        coWork.setTime("4:30PM");
-        coWork.setNumAttendees(2);
-
-        arrayList.add(coWork);
-        coWork =  null;
-
-        coWork = new CoWork();
-        coWork.setLocation("Location 2");
-        coWork.setActivityType(2);
-        coWork.setTime("10:00AM");
-        coWork.setNumAttendees(3);
-
-        arrayList.add(coWork);
-        coWork =  null;
+    CardViewAdapter(Context context, ArrayList<CoWork> coWorkList){
+        mContext = context;
+        mCoworkList = coWorkList;
     }
 
     @Override
@@ -51,18 +34,16 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
 
-        holder.location.setText(arrayList.get(position).getLocation());
-        if(arrayList.get(position).getActivityType() == 1)
-            holder.activityType.setText("Hacking");
-        else
-            holder.activityType.setText("Reading");
-        holder.numAttendees.setText(String.valueOf(arrayList.get(position).getNumAttendees()));
-        holder.time.setText(arrayList.get(position).getTime());
+        holder.location.setText(mCoworkList.get(position).getLocationName());
+        String[] activityType = mContext.getResources().getStringArray(R.array.array_activities);
+        holder.activityType.setText(activityType[mCoworkList.get(position).getActivityType()]);
+        holder.numAttendees.setText(String.valueOf(mCoworkList.get(position).getNumAttendees()));
+        holder.time.setText(mCoworkList.get(position).getTime() + " " + mCoworkList.get(position).getDate());
     }
 
     @Override
     public int getItemCount() {
-        return arrayList.size();
+        return mCoworkList.size();
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{

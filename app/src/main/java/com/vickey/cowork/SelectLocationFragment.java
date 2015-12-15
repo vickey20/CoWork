@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -17,13 +18,21 @@ import android.os.Bundle;
 import android.os.Vibrator;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.text.Editable;
+import android.text.Html;
+import android.text.Spanned;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -38,16 +47,22 @@ import com.google.android.gms.location.LocationSettingsRequest;
 import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
+import com.google.android.gms.location.places.AutocompletePrediction;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.PlaceBuffer;
+import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class SelectLocationFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener{
@@ -76,6 +91,11 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
     private Vibrator mVibrator;
 
+    private AutoCompleteTextView mAutoSearch;
+    PlaceAutocompleteAdapter mAutoCompleteAdapter;
+
+    private LatLngBounds mBounds;
+
     public SelectLocationFragment() {
 
     }
@@ -91,7 +111,11 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_select_location, container, false);
+        View v = inflater.inflate(R.layout.fragment_select_location, container, false);
+
+        mAutoSearch = (AutoCompleteTextView) v.findViewById(R.id.textViewSearch);
+
+        return v;
     }
 
     @Override
@@ -104,6 +128,8 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                 .addConnectionCallbacks(this)
                 .addOnConnectionFailedListener(this)
                 .addApi(LocationServices.API)
+                .enableAutoManage(getActivity(), 1 /* clientId */, this)
+                .addApi(Places.GEO_DATA_API)
                 .build();
 
         // Create the LocationRequest object
@@ -111,6 +137,88 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+
+        mAutoCompleteAdapter = new PlaceAutocompleteAdapter(mContext, mGoogleApiClient, mBounds, null);
+        mAutoSearch.setAdapter(mAutoCompleteAdapter);
+    }
+
+    /**
+     * Listener that handles selections from suggestions from the AutoCompleteTextView that
+     * displays Place suggestions.
+     * Gets the place id of the selected item and issues a request to the Places Geo Data API
+     * to retrieve more details about the place.
+     *
+     * @see com.google.android.gms.location.places.GeoDataApi#getPlaceById(com.google.android.gms.common.api.GoogleApiClient,
+     * String...)
+     */
+    private AdapterView.OnItemClickListener mAutocompleteClickListener
+            = new AdapterView.OnItemClickListener() {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            /*
+             Retrieve the place ID of the selected item from the Adapter.
+             The adapter stores each Place suggestion in a AutocompletePrediction from which we
+             read the place ID and title.
+              */
+            final AutocompletePrediction item = mAutoCompleteAdapter.getItem(position);
+            final String placeId = item.getPlaceId();
+            final CharSequence primaryText = item.getPrimaryText(null);
+
+            Log.i(TAG, "Autocomplete item selected: " + primaryText);
+
+            /*
+             Issue a request to the Places Geo Data API to retrieve a Place object with additional
+             details about the place.
+              */
+            PendingResult<PlaceBuffer> placeResult = Places.GeoDataApi
+                    .getPlaceById(mGoogleApiClient, placeId);
+            placeResult.setResultCallback(mUpdatePlaceDetailsCallback);
+
+            Toast.makeText(mContext, "Clicked: " + primaryText,
+                    Toast.LENGTH_SHORT).show();
+            Log.i(TAG, "Called getPlaceById to get Place details for " + placeId);
+        }
+    };
+
+    /**
+     * Callback for results from a Places Geo Data API query that shows the first place result in
+     * the details view on screen.
+     */
+    private ResultCallback<PlaceBuffer> mUpdatePlaceDetailsCallback
+            = new ResultCallback<PlaceBuffer>() {
+        @Override
+        public void onResult(PlaceBuffer places) {
+            if (!places.getStatus().isSuccess()) {
+                // Request did not complete successfully
+                Log.e(TAG, "Place query did not complete. Error: " + places.getStatus().toString());
+                places.release();
+                return;
+            }
+            // Get the Place object from the buffer.
+            final Place place = places.get(0);
+
+            // Format details of the place for display and show it in a TextView.
+            Log.d(TAG, "mUpdatePlaceDetailsCallback: " + formatPlaceDetails(getResources(), place.getName(),
+                    place.getId(), place.getAddress(), place.getPhoneNumber(),
+                    place.getWebsiteUri()));
+
+
+            Log.i(TAG, "Place details received: " + place.getName());
+
+            mMap.clear();
+            mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName().toString())).setDraggable(true);
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16));
+
+            places.release();
+        }
+    };
+
+    private Spanned formatPlaceDetails(Resources res, CharSequence name, String id,
+                                              CharSequence address, CharSequence phoneNumber, Uri websiteUri) {
+        Log.d(TAG, res.getString(R.string.place_details, name, id, address, phoneNumber,
+                websiteUri));
+        return Html.fromHtml(res.getString(R.string.place_details, name, id, address, phoneNumber,
+                websiteUri));
 
     }
 
@@ -257,6 +365,10 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             @Override
             public void onMyLocationChange(Location location) {
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
+                LatLng loc1 = new LatLng(location.getLatitude() - 0.5, location.getLongitude() - 0.1);
+                LatLng loc2 = new LatLng(location.getLatitude() + 0.5, location.getLongitude() + 0.5);
+                mBounds = new LatLngBounds(loc1, loc2);
+
                 //mMap.addMarker(new MarkerOptions().position(loc));
                 if (mMap != null && mIsStartup == true) {
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
@@ -276,7 +388,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
                 Geocoder coder = new Geocoder(mContext);
                 try {
-                    ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude,latLng.longitude,1);
+                    ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
                     if(mVibrator != null){
                         mVibrator.vibrate(50);
@@ -284,15 +396,17 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
                     Address addr = addressList.get(0);
                     Log.d(TAG, "address: " + addr);
-                    String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1) + ", " + addr.getAddressLine(2);
+                    String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
                     Log.d(TAG, "address fine: " + address);
-                    Log.d(TAG, "lat lng: " + latLng.latitude + ", " + latLng.longitude);
-
-                    new BackgroundTask().execute(latLng);
 
                     mMap.clear();
-                    mMap.addMarker(new MarkerOptions().position(latLng).title(address)).setDraggable(true);
+                    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(address);
+                    Marker marker = mMap.addMarker(markerOptions);
+                    marker.setDraggable(true);
+                    marker.showInfoWindow();
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+
+                    mListener.setLocation(address, latLng);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -378,18 +492,21 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged");
+        LatLng loc1 = new LatLng(location.getLatitude() - 1, location.getLongitude() - 1);
+        LatLng loc2 = new LatLng(location.getLatitude() + 1, location.getLongitude() + 1);
+        mBounds = new LatLngBounds(loc1, loc2);
         handleNewLocation(location);
     }
 
     public interface SelectLocationListener {
-        public void onSelectLocationEvent(int code);
+        public void setLocation(String address, LatLng latLng);
     }
 
     class BackgroundTask extends AsyncTask<LatLng, Void, String>{
 
         @Override
         protected String doInBackground(LatLng... params) {
-            Helper helper = new Helper();
+            HelperClass helper = new HelperClass(mContext);
             String resp = helper.getPlaceFromLocation(params[0]);
             return resp;
         }
@@ -399,5 +516,23 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             super.onPostExecute(s);
         }
     }
+
+    /*class AutoCompleteTask extends AsyncTask<String, Void, ArrayList<String>>{
+
+        @Override
+        protected ArrayList<String> doInBackground(String... params) {
+            Helper helper = new Helper();
+            ArrayList<String> resp = helper.getAddressesFromInput(params[0]);
+            return resp;
+        }
+
+        @Override
+        protected void onPostExecute(ArrayList<String> s) {
+            super.onPostExecute(s);
+
+            mAutoCompleteAdapter.addAll();
+            mAutoCompleteAdapter.notifyDataSetChanged();
+        }
+    }*/
 
 }

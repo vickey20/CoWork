@@ -1,12 +1,14 @@
 package com.vickey.cowork;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.ContextCompat;
@@ -17,30 +19,32 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
-public class CreateActivity extends AppCompatActivity implements View.OnClickListener,
+import com.google.android.gms.maps.model.LatLng;
+
+public class CreateActivity extends FragmentActivity implements View.OnClickListener,
                                                         SelectLocationFragment.SelectLocationListener,
-                                                        DetailsFragment.OnFragmentInteractionListener,
-                                                        ShareFragment.OnFragmentInteractionListener {
+                                                        DetailsFragment.DetailsListener,
+                                                        ShareFragment.ShareListener {
 
     private final int ACCESS_PERMISSION_DENIED = 101;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 201;
 
     private final String TAG = "CreateActivity";
 
-    SharedPreferences mSharedPref;
-    SharedPreferences.Editor mEditor;
+    private SharedPreferences mSharedPref;
+    private SharedPreferences.Editor mEditor;
 
     //UI widgets
-    ViewPager mViewPager;
-    TextView mNext;
-    TextView mPrev;
+    private ViewPager mViewPager;
+    private TextView mNext;
+    private TextView mPrev;
 
-    int count = 0;
-    int tracker = 0;
-    static final int NUM_ITEMS = 3;
-    MyAdapter mAdapter;
-    int currentItem;
-    FragmentManager fm;
+    private int mTracker = 0;
+    private static final int NUM_ITEMS = 3;
+    private MyAdapter mAdapter;
+    FragmentManager mFragmentManager;
+
+    private CoWork mCoWork;
 
     @Override
     protected void onResume() {
@@ -59,9 +63,9 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         mPrev.setOnClickListener(CreateActivity.this);
         mNext.setOnClickListener(CreateActivity.this);
 
-        fm = getSupportFragmentManager();
+        mFragmentManager = getSupportFragmentManager();
         mViewPager.setOffscreenPageLimit(3);
-        mAdapter = new MyAdapter(fm);
+        mAdapter = new MyAdapter(mFragmentManager);
 
         mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
         int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_UNGRANTED);
@@ -71,16 +75,47 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         else{
             mViewPager.setAdapter(mAdapter);
         }
+
+        mCoWork = new CoWork();
+
+        mCoWork.setCreatorID(HomeActivity.USER_ID);
     }
 
     @Override
-    public void onFragmentInteraction(Uri uri) {
+    public void setLocation(String address, LatLng latLng) {
+        mCoWork.setLocationName(address);
+        mCoWork.setLocationLat(String.valueOf(latLng.latitude));
+        mCoWork.setLocationLng(String.valueOf(latLng.longitude));
+    }
+
+    @Override
+    public void shareEvent(int event) {
 
     }
 
     @Override
-    public void onSelectLocationEvent(int code) {
+    public void setActivityType(int activityType) {
+        mCoWork.setActivityType(activityType);
+    }
 
+    @Override
+    public void setDescription(String description) {
+        mCoWork.setDescription(description);
+    }
+
+    @Override
+    public void setNumAttendees(int numAttendees) {
+        mCoWork.setNumAttendees(numAttendees);
+    }
+
+    @Override
+    public void setTime(String time) {
+        mCoWork.setTime(time);
+    }
+
+    @Override
+    public void setDate(String date) {
+        mCoWork.setDate(date);
     }
 
     public static class MyAdapter extends FragmentStatePagerAdapter {
@@ -113,25 +148,40 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()){
             case R.id.textViewPrevious:
-                if(tracker > 0){
-                    mViewPager.setCurrentItem(--tracker);
+                if(mTracker > 0){
+                    mViewPager.setCurrentItem(--mTracker);
                 }
-                if(tracker == 0){
+                if(mTracker == 0){
                     mPrev.setEnabled(false);
                 }
                 break;
 
             case R.id.textViewNext:
-                if(tracker >= 0 && tracker < 2){
-                    mViewPager.setCurrentItem(++tracker);
-                    mNext.setText("Next");
+                ++mTracker;
+                if(mTracker > 0 && mTracker < 3){
+                    mViewPager.setCurrentItem(mTracker);
+                    if(mTracker == 2){
+                        mNext.setText("Done");
+                    }
+                    else{
+                        mNext.setText("Next");
+                    }
                 }
-                if(tracker == 2){
-                    mNext.setText("Done");
-                }
-                if(tracker > 0){
+                if(mTracker > 0){
                     mPrev.setEnabled(true);
                 }
+
+                if(mTracker == 3){
+                    HelperClass helperClass = new HelperClass(CreateActivity.this);
+                    ProgressDialog pd = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
+                    if(helperClass.saveCoworkToDatabase(mCoWork) == 1){
+                        if(pd != null){
+                            pd.cancel();
+                        }
+                        finish();
+                    }
+                }
+
                 break;
         }
     }

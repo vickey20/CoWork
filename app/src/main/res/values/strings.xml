@@ -20,6 +20,7 @@
     <!-- Login shared preference file name -->
     <string name="login_shared_pref">LoginSharedPref</string>
     <string name="create_cowork_shared_pref">CreateCoworkSharedPref</string>
+    <string name="database_shared_pref">DatabaseSharedPref</string>
 
     <!-- Strings related to HomeActivity -->
     <string name="create_cowork">Create</string>
@@ -29,6 +30,14 @@
 
     <!-- Strings related to DetailsFragment -->
     <string name="label_choose_activity">So, what are you doing?</string>
+    <!-- for now, will update later -->
+    <string-array name="array_activities">
+        <item>Reading</item>
+        <item>Writing</item>
+        <item>Coding</item>
+        <item>Homework</item>
+        <item>Painting</item>
+    </string-array>
     <string name="label_description">Tell us more about it!</string>
     <string name="label_num_people">Max # of Co-Workers</string>
     <string name="label_one">One</string>
@@ -42,7 +51,13 @@
     <!-- Strings related to SelectLocationFragment -->
     <string name="toast_drop_pin_message">Press and hold on map to drop pin</string>
 
+    <!-- Strings related to ShareFragment -->
+    <string name="label_share">Share with your friends!</string>
+
 <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Place Id: %2$s&lt;/i&gt;&lt;br/&gt;Address: %3$s&lt;br/&gt;Phone: %4$s&lt;br/&gt;Website: %5$s</string>
+    <string name="title_activity_view_profile">ViewProfileActivity</string>
 
 </resources>

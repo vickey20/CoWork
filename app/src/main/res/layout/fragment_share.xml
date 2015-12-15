@@ -1,9 +1,25 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
-    android:layout_height="match_parent" tools:context="com.vickey.cowork.ShareFragment">
+    android:layout_height="match_parent" tools:context="com.vickey.cowork.ShareFragment"
+    android:orientation="vertical"
+    android:gravity="center">
 
-    <!-- TODO: Update blank fragment layout -->
-    <TextView android:layout_width="match_parent" android:layout_height="match_parent"
-        android:text="Share" />
 
-</FrameLayout>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/label_share"
+        android:textSize="22dp"
+        android:layout_gravity="center"/>
+
+    <ImageView
+        android:id="@+id/imageViewShareFB"
+        android:layout_width="250dp"
+        android:layout_height="50dp"
+        android:layout_margin="20dp"
+        android:src="@drawable/share_fb"
+        android:scaleType="fitXY"
+        android:layout_gravity="center"
+        />
+
+</LinearLayout>

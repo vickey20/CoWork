@@ -25,7 +25,7 @@
             <TextView
                 android:id="@+id/textViewLocationName"
                 android:layout_width="fill_parent"
-                android:layout_height="40dp"
+                android:layout_height="50dp"
                 android:paddingLeft="@dimen/activity_horizontal_margin"
                 android:paddingRight="@dimen/activity_horizontal_margin"
                 android:layout_gravity="bottom"
@@ -33,7 +33,7 @@
                 android:background="@color/black"
                 android:alpha="0.5"
                 android:textColor="#fff"
-                android:textSize="22sp"
+                android:textSize="20sp"
                 android:text="Sample Location"
                 android:layout_alignBottom="@+id/imageViewMap"
                 android:layout_alignParentLeft="true"

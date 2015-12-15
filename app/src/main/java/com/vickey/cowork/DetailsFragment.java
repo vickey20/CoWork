@@ -12,6 +12,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -35,15 +36,15 @@ import java.util.Locale;
 public class DetailsFragment extends Fragment {
     private String TAG = "DetailsFragment";
     private final int CHAR_COUNT = 200;
-    private OnFragmentInteractionListener mListener;
+    private DetailsListener mListener;
 
-    Spinner mSpinnerActivity; //mSpinnerPeople;
+    Spinner mSpinnerActivity;
     EditText mEditTextDescription;
     TextView mTextViewTime, mTextViewDate, mTextViewCharCount;
     RadioGroup mRadioGroup;
 
     int mCharCount = 0;
-    String[] mActivities = {"Reading", "Writing", "Coding", "Writing assignments", "Painting"}; //for now, will update later
+    String[] mActivities;
 
     public static DetailsFragment newInstance(String param1, String param2) {
         DetailsFragment fragment = new DetailsFragment();
@@ -78,6 +79,7 @@ public class DetailsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        mActivities =  getResources().getStringArray(R.array.array_activities);
         mTextViewCharCount.setText(String.valueOf(CHAR_COUNT));
 
         mEditTextDescription.addTextChangedListener(new TextWatcher() {
@@ -94,7 +96,7 @@ public class DetailsFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-
+                mListener.setDescription(s.toString());
             }
         });
 
@@ -118,6 +120,7 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "selected activity: " + mActivities[position]);
+                mListener.setActivityType(position);
             }
 
             @Override
@@ -130,6 +133,7 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 Log.d(TAG, "selected radio: " + checkedId);
+                mListener.setNumAttendees(getNumAttendees(checkedId));
             }
         });
 
@@ -137,11 +141,29 @@ public class DetailsFragment extends Fragment {
         mSpinnerActivity.setAdapter(adapterActivity);
 
         Calendar c = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm");
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
         mTextViewTime.setText(sdf.format(c.getTime()));
         sdf = new SimpleDateFormat("EEE, MMM dd");
         mTextViewDate.setText(sdf.format(c.getTime()));
 
+    }
+
+    public int getNumAttendees(int checkedId){
+
+        switch (checkedId){
+            case R.id.radioButton1:
+                return 1;
+            case R.id.radioButton2:
+                return 2;
+            case R.id.radioButton3:
+                return 3;
+            case R.id.radioButton4:
+                return 4;
+            case R.id.radioButton5:
+                return 5;
+        }
+
+        return 1;
     }
 
     /**
@@ -152,18 +174,11 @@ public class DetailsFragment extends Fragment {
         return f;
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
-        }
-    }
-
     @Override
     public void onAttach(Activity activity) {
         super.onAttach(activity);
         try {
-            mListener = (OnFragmentInteractionListener) activity;
+            mListener = (DetailsListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnFragmentInteractionListener");
@@ -176,8 +191,12 @@ public class DetailsFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnFragmentInteractionListener {
-        public void onFragmentInteraction(Uri uri);
+    public interface DetailsListener {
+        public void setActivityType(int activityType);
+        public void setDescription(String description);
+        public void setNumAttendees(int numAttendees);
+        public void setTime(String time);
+        public void setDate(String date);
     }
 
     class StartTimePicker extends DialogFragment implements TimePickerDialog.OnTimeSetListener{
@@ -191,7 +210,7 @@ public class DetailsFragment extends Fragment {
             int minute = c.get(Calendar.MINUTE);
 
             // Use the current date as the default date in the picker
-            TimePickerDialog dialog = new TimePickerDialog(getActivity(), this, hour, minute, true);
+            TimePickerDialog dialog = new TimePickerDialog(getActivity(), this, hour, minute, false);
 
             return dialog;
 
@@ -200,7 +219,6 @@ public class DetailsFragment extends Fragment {
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             // TODO Auto-generated method stub
-            updateTimeField( hourOfDay, minute );
 
             Calendar calNow = Calendar.getInstance();
             Calendar calSet = (Calendar) calNow.clone();
@@ -214,6 +232,8 @@ public class DetailsFragment extends Fragment {
 
                 calSet.add(Calendar.DATE, 1);
             }
+
+            updateTimeField( calSet );
         }
     }
 
@@ -238,7 +258,7 @@ public class DetailsFragment extends Fragment {
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
             // TODO Auto-generated method stub
-            updateDateField(year, monthOfYear, dayOfMonth);
+            updateDateField(year, monthOfYear + 1, dayOfMonth);
         }
     }
 
@@ -254,14 +274,17 @@ public class DetailsFragment extends Fragment {
 
             Log.d("MainActivity", "date: " + dateStr);
             mTextViewDate.setText(dateStr);
+            mListener.setDate(dateStr);
         } catch (ParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
 
-    public void updateTimeField(int hour, int minute) {
+    public void updateTimeField(Calendar calendar) {
 
-        mTextViewTime.setText("" + hour + ":" + minute);
+        String time = (String) DateFormat.format("hh:mm a", calendar.getTime());
+        mTextViewTime.setText(time);
+        mListener.setTime(time);
     }
 }

@@ -72,7 +72,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     //Progress dialog to show login progress
 
-    ProgressDialog progressDialog;
+    private ProgressDialog mProgressDialog;
 
     /**
      * A dummy authentication store containing known user names and passwords.
@@ -195,6 +195,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             userProfile.setLoginType(Constants.LoginType.LOGIN_TYPE_FACEBOOK);
 
                             Log.d(TAG, userProfile.getName());
+                            Log.d(TAG, userProfile.getGender());
                             /*
                                  Call the Helper to send user profile to the web server.
                                  When Helper returns, save the profile in preferences.
@@ -236,8 +237,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     }
 
     private void showProgressDialog(){
-        progressDialog = ProgressDialog.show(LoginActivity.this, "Login", "Logging you in...", false, false);
-        progressDialog.show();
+        mProgressDialog = ProgressDialog.show(LoginActivity.this, "Login", "Logging you in...", false, false);
+        mProgressDialog.show();
     }
 
     private void saveProfileToPreference(UserProfile profile){
@@ -245,6 +246,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
         editor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
         editor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_FACEBOOK);
+
         editor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
         editor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
         editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, profile.getEmail());
@@ -257,8 +259,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
 
     private void startHomeActivity(){
 
-        if(progressDialog != null){
-            progressDialog.cancel();
+        if(mProgressDialog != null){
+            mProgressDialog.cancel();
         }
 
         //showProgress(false);
@@ -357,9 +359,22 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         } else {
             // Show a progress spinner, and kick off a background task to
             // perform the user login attempt.
-            showProgress(true);
+            //showProgress(true);
+            showProgressDialog();
+            /*
             mAuthTask = new UserLoginTask(email, password);
             mAuthTask.execute((Void) null);
+            */
+            SharedPreferences sharedPref = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_NEW_REGISTER);
+            editor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
+            editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, email);
+            editor.putString(Constants.PreferenceKeys.KEY_LOGIN_PASSWORD, password);
+            editor.commit();
+
+            startHomeActivity();
+
         }
     }
 
