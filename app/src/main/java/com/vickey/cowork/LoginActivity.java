@@ -44,6 +44,8 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.vickey.cowork.utilities.Constants;
+import com.vickey.cowork.utilities.HelperClass;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -73,6 +75,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
     //Progress dialog to show login progress
 
     private ProgressDialog mProgressDialog;
+
+    HelperClass mHelper;
 
     /**
      * A dummy authentication store containing known user names and passwords.
@@ -200,7 +204,8 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                  Call the Helper to send user profile to the web server.
                                  When Helper returns, save the profile in preferences.
                             */
-                            saveProfileToPreference(userProfile);
+                            mHelper = new HelperClass(LoginActivity.this);
+                            mHelper.saveProfileToPreference(userProfile);
 
                             Thread.sleep(1000);
 
@@ -241,21 +246,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         mProgressDialog.show();
     }
 
-    private void saveProfileToPreference(UserProfile profile){
-        SharedPreferences.Editor editor = mSharedPref.edit();
 
-        editor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
-        editor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_FACEBOOK);
-
-        editor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
-        editor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
-        editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, profile.getEmail());
-        editor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, profile.getGender());
-        editor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, profile.getProfession());
-
-        editor.commit();
-
-    }
 
     private void startHomeActivity(){
 

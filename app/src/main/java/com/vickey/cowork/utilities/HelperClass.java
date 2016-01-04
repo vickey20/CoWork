@@ -1,4 +1,4 @@
-package com.vickey.cowork;
+package com.vickey.cowork.utilities;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -10,6 +10,8 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.vickey.cowork.CoWork;
+import com.vickey.cowork.UserProfile;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -34,8 +36,8 @@ public class HelperClass {
 
     public HelperClass(Context context){
         mContext = context;
-        /*mSp = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mEditor = mSp.edit();*/
+        mSp = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mEditor = mSp.edit();
     }
 
     public int initializeDatabase() {
@@ -173,5 +175,19 @@ public class HelperClass {
         Log.d(TAG, "getPlaceFromLocation: response: " + jsonResp);
 
         return jsonResp;
+    }
+
+    public void saveProfileToPreference(UserProfile profile){
+
+        mEditor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
+        mEditor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_FACEBOOK);
+
+        mEditor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
+        mEditor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
+        mEditor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, profile.getEmail());
+        mEditor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, profile.getGender());
+        mEditor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, profile.getProfession());
+
+        mEditor.commit();
     }
 }

@@ -1,7 +1,7 @@
 package com.vickey.cowork;
 
 /**
- * Created by ajay on 11/20/2015.
+ * Created by vikram on 11/20/2015.
  */
 public class CoWork {
 
@@ -19,7 +19,7 @@ public class CoWork {
     int finished;
     int canceled;
 
-    CoWork(){
+    public CoWork(){
         coworkID = 0;
         creatorID = "";
         attendeesID = "";

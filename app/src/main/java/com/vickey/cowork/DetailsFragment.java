@@ -96,7 +96,7 @@ public class DetailsFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                mListener.setDescription(s.toString());
+                mListener.onDescriptionSet(s.toString());
             }
         });
 
@@ -120,7 +120,7 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Log.d(TAG, "selected activity: " + mActivities[position]);
-                mListener.setActivityType(position);
+                mListener.onActivitySet(position);
             }
 
             @Override
@@ -133,7 +133,7 @@ public class DetailsFragment extends Fragment {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 Log.d(TAG, "selected radio: " + checkedId);
-                mListener.setNumAttendees(getNumAttendees(checkedId));
+                mListener.onNumAttendeesSet(getNumAttendees(checkedId));
             }
         });
 
@@ -192,11 +192,11 @@ public class DetailsFragment extends Fragment {
     }
 
     public interface DetailsListener {
-        public void setActivityType(int activityType);
-        public void setDescription(String description);
-        public void setNumAttendees(int numAttendees);
-        public void setTime(String time);
-        public void setDate(String date);
+        public void onActivitySet(int activityType);
+        public void onDescriptionSet(String description);
+        public void onNumAttendeesSet(int numAttendees);
+        public void onTimeSet(String time);
+        public void onDateSet(String date);
     }
 
     class StartTimePicker extends DialogFragment implements TimePickerDialog.OnTimeSetListener{
@@ -274,7 +274,7 @@ public class DetailsFragment extends Fragment {
 
             Log.d("MainActivity", "date: " + dateStr);
             mTextViewDate.setText(dateStr);
-            mListener.setDate(dateStr);
+            mListener.onDateSet(dateStr);
         } catch (ParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -285,6 +285,6 @@ public class DetailsFragment extends Fragment {
 
         String time = (String) DateFormat.format("hh:mm a", calendar.getTime());
         mTextViewTime.setText(time);
-        mListener.setTime(time);
+        mListener.onTimeSet(time);
     }
 }

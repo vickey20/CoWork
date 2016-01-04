@@ -59,6 +59,8 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.vickey.cowork.utilities.ConnectionDetector;
+import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -225,6 +227,8 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onResume() {
         super.onResume();
+        Log.d(TAG, "onResume");
+
         mContext = getContext();
         mCoder = new Geocoder(mContext);
 
@@ -333,7 +337,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     }
 
     private void setUpMapIfNeeded() {
-
+        Log.d(TAG, "setUpMapIfNeeded");
         FragmentManager fm = getChildFragmentManager();
         mSupportMapFragment = (SupportMapFragment) fm.findFragmentById(R.id.map);
         if (mSupportMapFragment == null) {
@@ -364,6 +368,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         mMap.setOnMyLocationChangeListener(new GoogleMap.OnMyLocationChangeListener() {
             @Override
             public void onMyLocationChange(Location location) {
+                //set bounds for place search nearby
                 LatLng loc = new LatLng(location.getLatitude(), location.getLongitude());
                 LatLng loc1 = new LatLng(location.getLatitude() - 0.5, location.getLongitude() - 0.1);
                 LatLng loc2 = new LatLng(location.getLatitude() + 0.5, location.getLongitude() + 0.5);
@@ -406,7 +411,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                     marker.showInfoWindow();
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
 
-                    mListener.setLocation(address, latLng);
+                    mListener.onLocationSet(address, latLng);
 
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -456,17 +461,19 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
         else {
-            handleNewLocation(location);
+            handleNewLocation(location, true);
         };
     }
 
-    private void handleNewLocation(Location location) {
+    private void handleNewLocation(Location location, boolean moveCamera) {
         Log.d(TAG, "handleNewLocation: " + location.toString());
         LatLng position = new LatLng(location.getLatitude(),location.getLongitude());
         mMap.setMyLocationEnabled(true);
         //mMap.addMarker(new MarkerOptions().position(position).title("Your location")).setDraggable();
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+        if(moveCamera) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+        }
     }
 
     @Override
@@ -492,14 +499,14 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onLocationChanged(Location location) {
         Log.d(TAG, "onLocationChanged");
-        LatLng loc1 = new LatLng(location.getLatitude() - 1, location.getLongitude() - 1);
-        LatLng loc2 = new LatLng(location.getLatitude() + 1, location.getLongitude() + 1);
+        LatLng loc1 = new LatLng(location.getLatitude() - 0.5, location.getLongitude() - 0.5);
+        LatLng loc2 = new LatLng(location.getLatitude() + 0.5, location.getLongitude() + 0.5);
         mBounds = new LatLngBounds(loc1, loc2);
-        handleNewLocation(location);
+        handleNewLocation(location, false);
     }
 
     public interface SelectLocationListener {
-        public void setLocation(String address, LatLng latLng);
+        public void onLocationSet(String address, LatLng latLng);
     }
 
     class BackgroundTask extends AsyncTask<LatLng, Void, String>{

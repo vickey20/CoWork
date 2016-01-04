@@ -49,14 +49,18 @@
         </activity>
         <activity
             android:name=".CreateActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:label="Create">
         </activity>
         <activity
             android:name=".DiscoverActivity"
-            android:screenOrientation="portrait" >
+            android:screenOrientation="portrait"
+            android:label="Discover">
         </activity>
-        <activity android:name=".ViewProfileActivity"
-            android:screenOrientation="portrait">
+        <activity
+            android:name=".ViewProfileActivity"
+            android:screenOrientation="portrait"
+            android:label="Profile">
         </activity>
     </application>
 

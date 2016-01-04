@@ -20,6 +20,8 @@ import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.vickey.cowork.utilities.Constants;
+import com.vickey.cowork.utilities.HelperClass;
 
 public class CreateActivity extends FragmentActivity implements View.OnClickListener,
                                                         SelectLocationFragment.SelectLocationListener,
@@ -68,7 +70,8 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
         mAdapter = new MyAdapter(mFragmentManager);
 
         mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
-        int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_UNGRANTED);
+        //int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_UNGRANTED);
+        int p = 1;
         if(p == 0){
             checkPermission();
         }
@@ -82,7 +85,7 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
     }
 
     @Override
-    public void setLocation(String address, LatLng latLng) {
+    public void onLocationSet(String address, LatLng latLng) {
         mCoWork.setLocationName(address);
         mCoWork.setLocationLat(String.valueOf(latLng.latitude));
         mCoWork.setLocationLng(String.valueOf(latLng.longitude));
@@ -94,27 +97,27 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
     }
 
     @Override
-    public void setActivityType(int activityType) {
+    public void onActivitySet(int activityType) {
         mCoWork.setActivityType(activityType);
     }
 
     @Override
-    public void setDescription(String description) {
+    public void onDescriptionSet(String description) {
         mCoWork.setDescription(description);
     }
 
     @Override
-    public void setNumAttendees(int numAttendees) {
+    public void onNumAttendeesSet(int numAttendees) {
         mCoWork.setNumAttendees(numAttendees);
     }
 
     @Override
-    public void setTime(String time) {
+    public void onTimeSet(String time) {
         mCoWork.setTime(time);
     }
 
     @Override
-    public void setDate(String date) {
+    public void onDateSet(String date) {
         mCoWork.setDate(date);
     }
 
