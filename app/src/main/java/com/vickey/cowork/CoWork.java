@@ -18,7 +18,6 @@ public class CoWork {
     String description;
     int finished;
     int canceled;
-    int test;
 
     public CoWork(){
         coworkID = 0;
