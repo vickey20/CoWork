@@ -18,6 +18,7 @@ public class ViewProfileActivity extends AppCompatActivity {
     ImageView mImageViewPhotoEdit;
     EditText mEditTextName, mEditTextEmail, mEditTextProfession, mEditTextAge;
     RadioGroup mRadioGroup;
+    int test;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
