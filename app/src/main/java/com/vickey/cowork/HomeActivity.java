@@ -112,6 +112,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 Intent i = new Intent(HomeActivity.this, ViewProfileActivity.class);
                 startActivity(i);
                 return true;
+            case R.id.instantCowork:
+                return true;
         }
 
         return super.onOptionsItemSelected(item);

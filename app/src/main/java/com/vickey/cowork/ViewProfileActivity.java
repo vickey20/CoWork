@@ -91,7 +91,11 @@ public class ViewProfileActivity extends AppCompatActivity {
         editor.putString(Constants.PreferenceKeys.KEY_USER_NAME, mEditTextName.getText().toString());
         editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, mEditTextEmail.getText().toString());
         editor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, mEditTextProfession.getText().toString());
-        editor.putInt(Constants.PreferenceKeys.KEY_USER_AGE, Integer.parseInt(mEditTextAge.getText().toString()));
+        String age = mEditTextAge.getText().toString();
+        if(age == null || age.equals("")){
+            age = "18";
+        }
+        editor.putInt(Constants.PreferenceKeys.KEY_USER_AGE, Integer.parseInt(age));
         editor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, (mRadioGroup.getCheckedRadioButtonId() == R.id.radioButtonMale? "male":"female"));
         editor.commit();
     }

@@ -58,7 +58,9 @@ public class Constants {
 
         public static final String DATABASE_NAME = "COWORK_DATABASE";
         public static final String TABLE_NAME_COWORK = "USER_COWORK_LIST";
+        public static final String TABLE_NAME_USER_PROFILE = "USER_COWORK_LIST";
 
+        //Table Cowork
         public static final String FIELD_COWORK_ID = "coworkId";
         public static final String FIELD_CREATOR_ID = "creatorId";
         public static final String FIELD_ATTENDEES_ID = "attendeesId";
@@ -73,19 +75,41 @@ public class Constants {
         public static final String FIELD_FINISHED = "finished";
         public static final String FIELD_CANCELED = "canceled";
 
+        //Table User Profile
+        public static final String FIELD_USER_ID = "userId";
+        public static final String FIELD_NAME = "name";
+        public static final String FIELD_GENDER = "gender";
+        public static final String FIELD_PROFESSION = "profession";
+        public static final String FIELD_EMAIL = "email";
+        public static final String FIELD_BIRTHDAY = "birthday";
+        public static final String FIELD_PHOTO = "photo";
+        public static final String FIELD_LOGINTYPE = "loginType";
+
         public static final String QUERY_CREATE_TABLE_COWORK = "CREATE TABLE IF NOT EXISTS "+TABLE_NAME_COWORK+"(" +
-                                                        FIELD_COWORK_ID + " INTEGER, " +
-                                                        FIELD_CREATOR_ID + " VARCHAR, " +
-                                                        FIELD_ATTENDEES_ID + " VARCHAR, " +
-                                                        FIELD_NUM_ATTENDEES + " INTEGER, " +
-                                                        FIELD_lOCATION_NAME + " VARCHAR, " +
-                                                        FIELD_LOCATION_LATITUDE + " VARCHAR, " +
-                                                        FIELD_LOCATION_LONGITUDE + " VARCHAR, " +
-                                                        FIELD_TIME + " VARCHAR, " +
-                                                        FIELD_DATE + " VARCHAR, " +
-                                                        FIELD_ACTIVITY_TYPE + " INTEGER, " +
-                                                        FIELD_DESCRIPTION + " VARCHAR, " +
-                                                        FIELD_FINISHED + " INTEGER, " +
-                                                        FIELD_CANCELED + " INTEGER);";
+                                                                "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                                                FIELD_COWORK_ID + " INTEGER, " +
+                                                                FIELD_CREATOR_ID + " VARCHAR, " +
+                                                                FIELD_ATTENDEES_ID + " VARCHAR, " +
+                                                                FIELD_NUM_ATTENDEES + " INTEGER, " +
+                                                                FIELD_lOCATION_NAME + " VARCHAR, " +
+                                                                FIELD_LOCATION_LATITUDE + " VARCHAR, " +
+                                                                FIELD_LOCATION_LONGITUDE + " VARCHAR, " +
+                                                                FIELD_TIME + " VARCHAR, " +
+                                                                FIELD_DATE + " VARCHAR, " +
+                                                                FIELD_ACTIVITY_TYPE + " INTEGER, " +
+                                                                FIELD_DESCRIPTION + " VARCHAR, " +
+                                                                FIELD_FINISHED + " INTEGER, " +
+                                                                FIELD_CANCELED + " INTEGER);";
+
+        public static final String QUERY_CREATE_TABLE_USER_PROFILE = "CREATE TABLE IF NOT EXISTS "+TABLE_NAME_USER_PROFILE+"(" +
+                                                                    "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                                                                    FIELD_USER_ID + " INTEGER, " +
+                                                                    FIELD_NAME + " VARCHAR, " +
+                                                                    FIELD_GENDER + " VARCHAR, " +
+                                                                    FIELD_PROFESSION + " VARCHAR, " +
+                                                                    FIELD_EMAIL + " VARCHAR, " +
+                                                                    FIELD_BIRTHDAY + " VARCHAR, " +
+                                                                    FIELD_PHOTO + " BLOB NOT NULL, " +
+                                                                    FIELD_LOGINTYPE + " INTEGER);";
     }
 }

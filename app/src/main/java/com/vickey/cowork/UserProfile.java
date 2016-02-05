@@ -1,5 +1,7 @@
 package com.vickey.cowork;
 
+import android.graphics.Bitmap;
+
 import com.vickey.cowork.utilities.Constants;
 
 /**
@@ -13,9 +15,10 @@ public class UserProfile {
     String profession;
     String email;
     String birthday;
+    Bitmap photo;
     Integer loginType;
 
-    UserProfile(){
+    public UserProfile(){
         userId = 0;
         name = "";
         gender = "";
@@ -23,6 +26,7 @@ public class UserProfile {
         email = "";
         birthday = "";
         loginType = Constants.LoginType.LOGIN_TYPE_NEW_REGISTER;
+        photo = null;
     }
 
     public int getUserId() {
@@ -74,5 +78,13 @@ public class UserProfile {
     }
     public void setLoginType(Integer loginType) {
         this.loginType = loginType;
+    }
+
+    public Bitmap getPhoto() {
+        return photo;
+    }
+
+    public void setPhoto(Bitmap photo) {
+        this.photo = photo;
     }
 }

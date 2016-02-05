@@ -5,6 +5,9 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.location.Location;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
@@ -13,6 +16,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.UserProfile;
 
+import java.io.ByteArrayOutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -48,6 +52,7 @@ public class HelperClass {
             mDatabase = mContext.openOrCreateDatabase(Constants.MyDatabase.DATABASE_NAME, mContext.MODE_PRIVATE, null);
 
             mDatabase.execSQL(Constants.MyDatabase.QUERY_CREATE_TABLE_COWORK);
+            mDatabase.execSQL(Constants.MyDatabase.QUERY_CREATE_TABLE_USER_PROFILE);
 
             mDatabase.close();
 
@@ -154,6 +159,83 @@ public class HelperClass {
         return 1;
     }
 
+    public int saveUserProfileToDB(UserProfile userProfile){
+        try {
+
+            ContentValues values = new ContentValues();
+
+            mDatabase = mContext.openOrCreateDatabase(Constants.MyDatabase.DATABASE_NAME, mContext.MODE_PRIVATE, null);
+
+            values.put(Constants.MyDatabase.FIELD_USER_ID, userProfile.getUserId());
+            values.put(Constants.MyDatabase.FIELD_NAME, userProfile.getName());
+            values.put(Constants.MyDatabase.FIELD_PROFESSION, userProfile.getProfession());
+            values.put(Constants.MyDatabase.FIELD_EMAIL, userProfile.getEmail());
+            values.put(Constants.MyDatabase.FIELD_BIRTHDAY, userProfile.getBirthday());
+            values.put(Constants.MyDatabase.FIELD_GENDER, userProfile.getGender());
+
+            // Convert the image into byte array
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            userProfile.getPhoto().compress(Bitmap.CompressFormat.PNG, 100, out);
+            byte[] buffer = out.toByteArray();
+
+            values.put(Constants.MyDatabase.FIELD_PHOTO, buffer);
+            values.put(Constants.MyDatabase.FIELD_LOGINTYPE, userProfile.getLoginType());
+
+            mDatabase.insert(Constants.MyDatabase.TABLE_NAME_USER_PROFILE, null, values);
+
+            mDatabase.close();
+
+
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            return 0;
+        }
+        return 1;
+    }
+
+    public UserProfile getUserProfileFromDB(){
+        UserProfile userProfile = new UserProfile();
+
+        try {
+            mDatabase = mContext.openOrCreateDatabase(Constants.MyDatabase.DATABASE_NAME, mContext.MODE_PRIVATE, null);
+            Cursor cur = mDatabase.rawQuery("SELECT * FROM "+Constants.MyDatabase.TABLE_NAME_USER_PROFILE, null);
+
+            if(cur != null)
+            {
+                //cur.moveToNext();
+
+                if(cur.moveToFirst())
+                {
+                    do
+                    {
+                        userProfile.setUserId(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_USER_ID)));
+                        userProfile.setName(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_NAME)));
+                        userProfile.setEmail(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_EMAIL)));
+                        userProfile.setProfession(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_PROFESSION)));
+                        userProfile.setGender(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_GENDER)));
+                        userProfile.setBirthday(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_BIRTHDAY)));
+                        byte[] blob = cur.getBlob(cur.getColumnIndex(Constants.MyDatabase.FIELD_PHOTO));
+                        userProfile.setPhoto(BitmapFactory.decodeByteArray(blob, 0, blob.length));
+                        userProfile.setLoginType(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOGINTYPE)));
+
+                    }while(cur.moveToNext());
+                }
+
+                cur.close();
+
+            }
+
+            mDatabase.close();
+
+        } catch (Exception e) {
+
+            e.printStackTrace();
+        }
+
+        return userProfile;
+    }
+
     public void uploadDb(){
 
     }
@@ -189,5 +271,11 @@ public class HelperClass {
         mEditor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, profile.getProfession());
 
         mEditor.commit();
+    }
+
+    public ArrayList<CoWork> getNearbyCoworkList(Location location){
+        ArrayList<CoWork> coworkList = new ArrayList<>();
+
+        return coworkList;
     }
 }

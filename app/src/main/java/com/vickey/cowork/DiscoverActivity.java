@@ -2,6 +2,7 @@ package com.vickey.cowork;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.IntentSender;
 import android.location.Location;
@@ -27,6 +28,7 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -43,6 +45,10 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     private boolean mIsStartup = true;
     private ArrayList<Integer> mSelectedFilters;
+
+    ProgressDialog mLoadingDialog;
+
+    HelperClass mHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,13 +70,19 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
         mMap.setOnMapClickListener(this);
         mMap.setOnMapLongClickListener(this);
+
+        mHelper = new HelperClass(DiscoverActivity.this);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+
         setUpMapIfNeeded();
+
         mGoogleApiClient.connect();
+
+        showLoadingDialog();
     }
 
     @Override
@@ -80,6 +92,14 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
         }
+    }
+
+    private void showLoadingDialog(){
+         mLoadingDialog = ProgressDialog.show(DiscoverActivity.this, "Loading Coworks", "Please wait...", false, true);
+    }
+
+    private void dismissLoadingDialog(){
+        mLoadingDialog.dismiss();
     }
 
     private void setUpMapIfNeeded() {
@@ -123,6 +143,12 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         mMap.setMyLocationEnabled(true);
     }
 
+    private ArrayList<CoWork> getNearbyCoworkList(){
+        ArrayList<CoWork> coworkList = new ArrayList<>();
+        coworkList = mHelper.getUserCoworkList();
+        return coworkList;
+    }
+
     @Override
     public void onMapClick(LatLng latLng) {
 
@@ -151,8 +177,14 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
         }
+
+        ArrayList<CoWork> coworkList = getNearbyCoworkList();
+
     }
 
+    private void setMarkers(ArrayList<CoWork> coworkList){
+
+    }
 
     @Override
     public void onConnectionSuspended(int i) {
