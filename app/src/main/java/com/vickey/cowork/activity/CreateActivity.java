@@ -1,11 +1,10 @@
-package com.vickey.cowork;
+package com.vickey.cowork.activity;
 
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -13,22 +12,25 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
 import com.google.android.gms.maps.model.LatLng;
+import com.vickey.cowork.CoWork;
+import com.vickey.cowork.fragment.DetailsFragment;
+import com.vickey.cowork.R;
+import com.vickey.cowork.fragment.SelectLocationFragment;
+import com.vickey.cowork.fragment.ShareFragment;
 import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
 public class CreateActivity extends FragmentActivity implements View.OnClickListener,
-                                                        SelectLocationFragment.SelectLocationListener,
-                                                        DetailsFragment.DetailsListener,
-                                                        ShareFragment.ShareListener {
+        SelectLocationFragment.SelectLocationListener,
+        DetailsFragment.DetailsListener,
+        ShareFragment.ShareListener {
 
-    private final int ACCESS_PERMISSION_DENIED = 101;
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 201;
 
     private final String TAG = "CreateActivity";
@@ -70,8 +72,7 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
         mAdapter = new MyAdapter(mFragmentManager);
 
         mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
-        //int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_UNGRANTED);
-        int p = 1;
+        int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
         if(p == 0){
             checkPermission();
         }
@@ -229,9 +230,6 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
-                    // permission was granted, yay! Do the
-                    // location-related task you need to do.
-
                     Log.d(TAG, "permission granted");
 
                     mEditor = mSharedPref.edit();
@@ -240,14 +238,10 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                     mViewPager.setAdapter(mAdapter);
                 } else {
 
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
-
                     mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_UNGRANTED);
+                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
                     mEditor.commit();
 
-                    //finish this activity as user has denied permission
                     // TODO: 12/14/2015 Remove this later and let user type an address instead of using current location
                     finish();
                 }

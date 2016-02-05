@@ -21,7 +21,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
         <activity
-            android:name=".LoginActivity"
+            android:name=".activity.LoginActivity"
             android:screenOrientation="portrait" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -43,22 +43,22 @@
             android:value="AIzaSyBzu2n3k9Nj3utGpBMcz-kBmFYEqBn_egM" />
 
         <activity
-            android:name=".HomeActivity"
+            android:name=".activity.HomeActivity"
             android:icon="@drawable/app_icon"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".CreateActivity"
+            android:name=".activity.CreateActivity"
             android:screenOrientation="portrait"
             android:label="Create">
         </activity>
         <activity
-            android:name=".DiscoverActivity"
+            android:name=".activity.DiscoverActivity"
             android:screenOrientation="portrait"
             android:label="Discover">
         </activity>
         <activity
-            android:name=".ViewProfileActivity"
+            android:name=".activity.ViewProfileActivity"
             android:screenOrientation="portrait"
             android:label="Profile">
         </activity>

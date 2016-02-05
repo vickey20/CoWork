@@ -1,4 +1,4 @@
-package com.vickey.cowork;
+package com.vickey.cowork.activity;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 
+import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.Constants;
 
 public class ViewProfileActivity extends AppCompatActivity {

@@ -1,15 +1,12 @@
-package com.vickey.cowork;
+package com.vickey.cowork.fragment;
 
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.format.DateFormat;
@@ -25,7 +22,8 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
-import android.widget.Toast;
+
+import com.vickey.cowork.R;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -169,7 +167,7 @@ public class DetailsFragment extends Fragment {
     /**
      * Create a new instance of DetailsFragment
      */
-    static DetailsFragment newInstance() {
+    public static DetailsFragment newInstance() {
         DetailsFragment f = new DetailsFragment();
         return f;
     }

@@ -1,4 +1,4 @@
-package com.vickey.cowork;
+package com.vickey.cowork.activity;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -44,6 +44,8 @@ import com.facebook.GraphRequest;
 import com.facebook.GraphResponse;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.vickey.cowork.R;
+import com.vickey.cowork.UserProfile;
 import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 

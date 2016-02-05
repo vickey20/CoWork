@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package com.vickey.cowork;
+package com.vickey.cowork.adapter;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;

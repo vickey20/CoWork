@@ -40,7 +40,7 @@ public class Constants {
     }
 
     public class Permissions{
-        public static final int PERMISSION_UNGRANTED = 0;
+        public static final int PERMISSION_DENIED = 0;
         public static final int PERMISSION_GRANTED = 1;
         public static final int NEVER = 2;
     }

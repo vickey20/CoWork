@@ -1,12 +1,14 @@
-package com.vickey.cowork;
+package com.vickey.cowork.adapter;
 
 import android.content.Context;
-import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.vickey.cowork.CoWork;
+import com.vickey.cowork.R;
 
 import java.util.ArrayList;
 
@@ -18,7 +20,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
     ArrayList<CoWork> mCoworkList;
     Context mContext;
 
-    CardViewAdapter(Context context, ArrayList<CoWork> coWorkList){
+    public CardViewAdapter(Context context, ArrayList<CoWork> coWorkList){
         mContext = context;
         mCoworkList = coWorkList;
     }

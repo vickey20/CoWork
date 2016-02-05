@@ -1,22 +1,18 @@
-package com.vickey.cowork;
+package com.vickey.cowork.fragment;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.facebook.share.model.ShareLinkContent;
-import com.facebook.share.widget.ShareButton;
 import com.facebook.share.widget.ShareDialog;
+import com.vickey.cowork.R;
 
 public class ShareFragment extends Fragment {
 
@@ -104,7 +100,7 @@ public class ShareFragment extends Fragment {
     /**
      * Create a new instance of ShareFragment
      */
-    static ShareFragment newInstance() {
+    public static ShareFragment newInstance() {
         ShareFragment f = new ShareFragment();
         return f;
     }

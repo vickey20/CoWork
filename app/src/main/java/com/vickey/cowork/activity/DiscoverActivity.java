@@ -1,12 +1,22 @@
-package com.vickey.cowork;
+package com.vickey.cowork.activity;
 
+import android.Manifest;
+import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.IntentSender;
+import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-import android.support.v4.app.FragmentActivity;
+import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -15,29 +25,42 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.PendingResult;
+import com.google.android.gms.common.api.ResultCallback;
+import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.location.LocationSettingsRequest;
+import com.google.android.gms.location.LocationSettingsResult;
+import com.google.android.gms.location.LocationSettingsStates;
+import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.vickey.cowork.CoWork;
+import com.vickey.cowork.R;
+import com.vickey.cowork.utilities.ConnectionDetector;
+import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
+    private final int REQUEST_CHECK_SETTINGS = 100;
+    private final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 201;
     private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     public static final String TAG = DiscoverActivity.class.getSimpleName();
+
+    SharedPreferences mSharedPref;
+    SharedPreferences.Editor mEditor;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
@@ -55,6 +78,19 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_discover);
 
+        mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
+        int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
+        if(p == 0){
+            checkPermission();
+        }
+        else{
+            initializeMap();
+        }
+
+        mHelper = new HelperClass(DiscoverActivity.this);
+    }
+
+    public void initializeMap(){
         setUpMapIfNeeded();
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -71,8 +107,62 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         mMap.setOnMapClickListener(this);
         mMap.setOnMapLongClickListener(this);
 
-        mHelper = new HelperClass(DiscoverActivity.this);
+        mGoogleApiClient.connect();
     }
+
+    private void checkPermission(){
+        //Check app permission for accessing location
+        int permissionCheck = ContextCompat.checkSelfPermission(DiscoverActivity.this,
+                Manifest.permission.ACCESS_FINE_LOCATION);
+
+        if(permissionCheck != PackageManager.PERMISSION_GRANTED){
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(DiscoverActivity.this,
+                    Manifest.permission.ACCESS_FINE_LOCATION)) {
+
+
+            } else {
+
+                ActivityCompat.requestPermissions(DiscoverActivity.this,
+                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
+                        PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
+
+            }
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode,
+                                           String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0
+                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    Log.d(TAG, "permission granted");
+
+                    mEditor = mSharedPref.edit();
+                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_GRANTED);
+                    mEditor.commit();
+                    initializeMap();
+                } else {
+
+                    mEditor = mSharedPref.edit();
+                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
+                    mEditor.commit();
+
+                    // TODO: 12/14/2015 Remove this later and let user type an address instead of using current location
+                    finish();
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other
+            // permissions this app might request
+        }
+    }
+
 
     @Override
     protected void onResume() {
@@ -80,17 +170,132 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
         setUpMapIfNeeded();
 
-        mGoogleApiClient.connect();
+        if(mGoogleApiClient != null){
+            mGoogleApiClient.connect();
+        }
 
-        showLoadingDialog();
+        performLocationEnabledCheck();
+        performNetworkCheck();
+
+        new GetCoWorksTask().execute();
     }
+
+    private void performLocationEnabledCheck(){
+        LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
+                .addLocationRequest(mLocationRequest);
+
+        PendingResult<LocationSettingsResult> result =
+                LocationServices.SettingsApi.checkLocationSettings(mGoogleApiClient, builder.build());
+        result.setResultCallback(new ResultCallback<LocationSettingsResult>() {
+            @Override
+            public void onResult(LocationSettingsResult result) {
+                final Status status = result.getStatus();
+                final LocationSettingsStates states = result.getLocationSettingsStates();
+                switch (status.getStatusCode()) {
+                    case LocationSettingsStatusCodes.SUCCESS:
+                        // All location settings are satisfied. The client can initialize location
+                        // requests here.
+                        Log.d(TAG, "Location available");
+                        break;
+                    case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
+                        // Location settings are not satisfied. But could be fixed by showing the user
+                        // a dialog.
+                        // Show the dialog by calling startResolutionForResult(),
+                        // and check the result in onActivityResult().
+                        //showAlertDialog(status);
+                        Log.d(TAG, "Location unavailable, go to settings");
+                        try {
+                            status.startResolutionForResult(
+                                    DiscoverActivity.this,
+                                    REQUEST_CHECK_SETTINGS);
+                        } catch (IntentSender.SendIntentException e) {
+                            e.printStackTrace();
+                        }
+                        break;
+                    case LocationSettingsStatusCodes.SETTINGS_CHANGE_UNAVAILABLE:
+                        // Location settings are not satisfied. However, we have no way to fix the
+                        // settings so we won't show the dialog.
+                        Log.d(TAG, "Settings unavailable");
+                        break;
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);
+        switch (requestCode) {
+            case REQUEST_CHECK_SETTINGS:
+                switch (resultCode) {
+                    case Activity.RESULT_OK:
+                        // All required changes were successfully made
+                        Log.d(TAG, "Location turned on.");
+                        break;
+                    case Activity.RESULT_CANCELED:
+                        // The user was asked to change settings, but chose not to
+                        Log.d(TAG, "Location not turned on.");
+                        break;
+                    default:
+                        break;
+                }
+                break;
+        }
+    }
+
+    private void performNetworkCheck(){
+        if(ConnectionDetector.isConnectedToInternet(DiscoverActivity.this) == false){
+            Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(
+                    mGoogleApiClient);
+            if (lastLocation != null) {
+                LatLng latLng = new LatLng(lastLocation.getLatitude(), lastLocation.getLongitude());
+                Geocoder coder = new Geocoder(DiscoverActivity.this);
+                try {
+                    ArrayList<Address> addresses = (ArrayList<Address>) coder.getFromLocation(latLng.latitude,latLng.longitude,1);
+                    String name = "";
+                    for(Address add : addresses){
+                        name = add.toString();
+                    }
+                    mMap.clear();
+                    mMap.addMarker(new MarkerOptions().position(latLng).title(name)).setDraggable(true);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                }
+                catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
 
     @Override
     protected void onPause() {
         super.onPause();
-        if (mGoogleApiClient.isConnected()) {
+        if (mGoogleApiClient != null && mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
+        }
+    }
+
+    class GetCoWorksTask extends AsyncTask<String, Void, String>{
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            showLoadingDialog();
+        }
+
+        @Override
+        protected String doInBackground(String... params) {
+
+            //fetch coworks
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            dismissLoadingDialog();
         }
     }
 
@@ -99,7 +304,8 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     }
 
     private void dismissLoadingDialog(){
-        mLoadingDialog.dismiss();
+        if(mLoadingDialog != null)
+            mLoadingDialog.dismiss();
     }
 
     private void setUpMapIfNeeded() {

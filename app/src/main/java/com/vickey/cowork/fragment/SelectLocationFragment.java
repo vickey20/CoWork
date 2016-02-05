@@ -1,13 +1,10 @@
-package com.vickey.cowork;
+package com.vickey.cowork.fragment;
 
-import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,22 +13,15 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Vibrator;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AlertDialog;
-import android.text.Editable;
 import android.text.Html;
 import android.text.Spanned;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Toast;
 
@@ -53,18 +43,18 @@ import com.google.android.gms.location.places.PlaceBuffer;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.vickey.cowork.adapter.PlaceAutocompleteAdapter;
+import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.ConnectionDetector;
 import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.List;
 
 public class SelectLocationFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener{
@@ -428,7 +418,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     /**
      * Create a new instance of SelectLocationFragment
      */
-    static SelectLocationFragment newInstance() {
+    public static SelectLocationFragment newInstance() {
         SelectLocationFragment f = new SelectLocationFragment();
         return f;
     }
