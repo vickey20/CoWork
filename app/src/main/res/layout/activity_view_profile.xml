@@ -23,7 +23,7 @@
                 android:layout_gravity="center|top"
                 android:layout_margin="16dp">
 
-                <ImageView
+                <com.vickey.cowork.utilities.RoundImageView
                     android:id="@+id/imageViewProfilePhoto"
                     android:layout_width="200dp"
                     android:layout_height="200dp"

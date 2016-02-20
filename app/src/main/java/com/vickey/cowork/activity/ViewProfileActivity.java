@@ -1,9 +1,13 @@
 package com.vickey.cowork.activity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -11,11 +15,15 @@ import android.widget.RadioGroup;
 
 import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.Constants;
+import com.vickey.cowork.utilities.ImagePicker;
+import com.vickey.cowork.utilities.RoundImageView;
+
+import java.io.File;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
     SharedPreferences mSharedPref;
-
+    RoundImageView mImageViewPhoto;
     ImageView mImageViewPhotoEdit;
     EditText mEditTextName, mEditTextEmail, mEditTextProfession, mEditTextAge;
     RadioGroup mRadioGroup;
@@ -25,6 +33,7 @@ public class ViewProfileActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_profile);
 
+        mImageViewPhoto = (RoundImageView) findViewById(R.id.imageViewProfilePhoto);
         mImageViewPhotoEdit = (ImageView) findViewById(R.id.imageViewProfilePhotoEdit);
         mEditTextName = (EditText) findViewById(R.id.editTextName);
         mEditTextEmail = (EditText) findViewById(R.id.editTextEmail);
@@ -38,7 +47,8 @@ public class ViewProfileActivity extends AppCompatActivity {
         mImageViewPhotoEdit.setOnClickListener(new ImageView.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                Intent chooseImageIntent = ImagePicker.getPickImageIntent(ViewProfileActivity.this);
+                startActivityForResult(chooseImageIntent, 1);
             }
         });
 
@@ -85,6 +95,12 @@ public class ViewProfileActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+        setProfilePhoto();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
 
@@ -99,5 +115,31 @@ public class ViewProfileActivity extends AppCompatActivity {
         editor.putInt(Constants.PreferenceKeys.KEY_USER_AGE, Integer.parseInt(age));
         editor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, (mRadioGroup.getCheckedRadioButtonId() == R.id.radioButtonMale? "male":"female"));
         editor.commit();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch(requestCode) {
+            case 1:
+                Bitmap bitmap = ImagePicker.getImageFromResult(this, resultCode, data);
+                // TODO use bitmap
+                mImageViewPhoto.setImageBitmap(bitmap);
+                break;
+            default:
+                super.onActivityResult(requestCode, resultCode, data);
+                setProfilePhoto();
+                break;
+        }
+    }
+
+    public void setProfilePhoto(){
+        File imgFile = new  File(String.valueOf(ImagePicker.getImagePath(getApplicationContext())));
+        if(imgFile.exists()){
+            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+            mImageViewPhoto.setImageBitmap(myBitmap);
+        }
+        else{
+            mImageViewPhoto.setBackgroundResource(R.drawable.profile);
+        }
     }
 }
