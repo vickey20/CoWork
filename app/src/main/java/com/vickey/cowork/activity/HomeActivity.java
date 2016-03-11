@@ -114,6 +114,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 startActivity(i);
                 return true;
             case R.id.instantCowork:
+                startActivity(new Intent(HomeActivity.this, InstantCreateActivity.class));
                 return true;
         }
 

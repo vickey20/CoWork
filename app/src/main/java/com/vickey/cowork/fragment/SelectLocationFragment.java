@@ -51,6 +51,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.vickey.cowork.adapter.PlaceAutocompleteAdapter;
 import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.ConnectionDetector;
+import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.IOException;
@@ -58,9 +59,6 @@ import java.util.ArrayList;
 
 public class SelectLocationFragment extends Fragment implements GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener{
-
-    private final int REQUEST_CHECK_SETTINGS = 100;
-    private final int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
 
     private String TAG = "SelectLocationFragment";
 
@@ -129,6 +127,8 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                 .setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
+
+        mGoogleApiClient.connect();
 
         mAutoCompleteAdapter = new PlaceAutocompleteAdapter(mContext, mGoogleApiClient, mBounds, null);
         mAutoSearch.setAdapter(mAutoCompleteAdapter);
@@ -223,7 +223,6 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         mCoder = new Geocoder(mContext);
 
         setUpMapIfNeeded();
-        mGoogleApiClient.connect();
 
         performLocationEnabledCheck();
         performNetworkCheck();
@@ -245,6 +244,9 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                         // All location settings are satisfied. The client can initialize location
                         // requests here.
                         Log.d(TAG, "Location available");
+                        if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
+                            mGoogleApiClient.connect();
+                        }
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied. But could be fixed by showing the user
@@ -256,7 +258,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                         try {
                             status.startResolutionForResult(
                                     getActivity(),
-                                    REQUEST_CHECK_SETTINGS);
+                                    Constants.ActivityConstants.REQUEST_CHECK_SETTINGS);
                         } catch (IntentSender.SendIntentException e) {
                             e.printStackTrace();
                         }
@@ -275,7 +277,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);
         switch (requestCode) {
-            case REQUEST_CHECK_SETTINGS:
+            case Constants.ActivityConstants.REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
@@ -294,6 +296,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
     private void performNetworkCheck(){
         if(ConnectionDetector.isConnectedToInternet(mContext) == false){
+            Toast.makeText(getActivity(), "Could not connect to internet", Toast.LENGTH_LONG).show();
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(
                     mGoogleApiClient);
             if (lastLocation != null) {
@@ -312,6 +315,11 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                 catch (Exception e){
                     e.printStackTrace();
                 }
+            }
+        }
+        else {
+            if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
+                mGoogleApiClient.connect();
             }
         }
     }
@@ -381,30 +389,34 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             @Override
             public void onMapLongClick(LatLng latLng) {
 
-                Geocoder coder = new Geocoder(mContext);
-                try {
-                    ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+                if (ConnectionDetector.isConnectedToInternet(getActivity())) {
+                    Geocoder coder = new Geocoder(mContext);
+                    try {
+                        ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
-                    if(mVibrator != null){
-                        mVibrator.vibrate(50);
+                        if (mVibrator != null) {
+                            mVibrator.vibrate(50);
+                        }
+
+                        Address addr = addressList.get(0);
+                        Log.d(TAG, "address: " + addr);
+                        String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
+                        Log.d(TAG, "address fine: " + address);
+
+                        mMap.clear();
+                        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(address);
+                        Marker marker = mMap.addMarker(markerOptions);
+                        marker.setDraggable(true);
+                        marker.showInfoWindow();
+                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+
+                        mListener.onLocationSet(address, latLng);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-
-                    Address addr = addressList.get(0);
-                    Log.d(TAG, "address: " + addr);
-                    String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
-                    Log.d(TAG, "address fine: " + address);
-
-                    mMap.clear();
-                    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(address);
-                    Marker marker = mMap.addMarker(markerOptions);
-                    marker.setDraggable(true);
-                    marker.showInfoWindow();
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
-
-                    mListener.onLocationSet(address, latLng);
-
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } else {
+                    Toast.makeText(getActivity(), "Could not connect to internet", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -452,7 +464,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         }
         else {
             handleNewLocation(location, true);
-        };
+        }
     }
 
     private void handleNewLocation(Location location, boolean moveCamera) {
@@ -477,7 +489,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         if (connectionResult.hasResolution()) {
             try {
                 // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(getActivity(), CONNECTION_FAILURE_RESOLUTION_REQUEST);
+                connectionResult.startResolutionForResult(getActivity(), Constants.ActivityConstants.CONNECTION_FAILURE_RESOLUTION_REQUEST);
             } catch (IntentSender.SendIntentException e) {
                 e.printStackTrace();
             }
