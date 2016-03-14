@@ -317,7 +317,7 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
     }
 
     private void showLoadingDialog(){
-        mProgressDialog = ProgressDialog.show(InstantCreateActivity.this, "Getting Location", "Please wait...", false, false);
+        mProgressDialog = ProgressDialog.show(InstantCreateActivity.this, "Getting Location", "Please wait...", false, true);
     }
 
     private void dismissLoadingDialog(){
