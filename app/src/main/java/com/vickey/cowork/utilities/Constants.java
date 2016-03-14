@@ -112,4 +112,10 @@ public class Constants {
                                                                     FIELD_PHOTO + " BLOB NOT NULL, " +
                                                                     FIELD_LOGINTYPE + " INTEGER);";
     }
+
+    public class ActivityConstants{
+        public final static int REQUEST_CHECK_SETTINGS = 100;
+        public final static int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 201;
+        public final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    }
 }

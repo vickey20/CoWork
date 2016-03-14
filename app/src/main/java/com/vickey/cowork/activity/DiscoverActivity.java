@@ -25,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -54,9 +55,6 @@ import java.util.ArrayList;
 public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
-    private final int REQUEST_CHECK_SETTINGS = 100;
-    private final int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 201;
-    private final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     public static final String TAG = DiscoverActivity.class.getSimpleName();
 
     SharedPreferences mSharedPref;
@@ -125,7 +123,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
                 ActivityCompat.requestPermissions(DiscoverActivity.this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
+                        Constants.ActivityConstants.PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
 
             }
         }
@@ -135,7 +133,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     public void onRequestPermissionsResult(int requestCode,
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
-            case PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
+            case Constants.ActivityConstants.PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
@@ -170,10 +168,6 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
         setUpMapIfNeeded();
 
-        if(mGoogleApiClient != null){
-            mGoogleApiClient.connect();
-        }
-
         performLocationEnabledCheck();
         performNetworkCheck();
 
@@ -196,6 +190,9 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                         // All location settings are satisfied. The client can initialize location
                         // requests here.
                         Log.d(TAG, "Location available");
+                        if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
+                            mGoogleApiClient.connect();
+                        }
                         break;
                     case LocationSettingsStatusCodes.RESOLUTION_REQUIRED:
                         // Location settings are not satisfied. But could be fixed by showing the user
@@ -207,7 +204,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                         try {
                             status.startResolutionForResult(
                                     DiscoverActivity.this,
-                                    REQUEST_CHECK_SETTINGS);
+                                    Constants.ActivityConstants.REQUEST_CHECK_SETTINGS);
                         } catch (IntentSender.SendIntentException e) {
                             e.printStackTrace();
                         }
@@ -226,7 +223,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         final LocationSettingsStates states = LocationSettingsStates.fromIntent(data);
         switch (requestCode) {
-            case REQUEST_CHECK_SETTINGS:
+            case Constants.ActivityConstants.REQUEST_CHECK_SETTINGS:
                 switch (resultCode) {
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
@@ -245,6 +242,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     private void performNetworkCheck(){
         if(ConnectionDetector.isConnectedToInternet(DiscoverActivity.this) == false){
+            Toast.makeText(DiscoverActivity.this, "Could not connect to internet", Toast.LENGTH_LONG).show();
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(
                     mGoogleApiClient);
             if (lastLocation != null) {
@@ -263,6 +261,11 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                 catch (Exception e){
                     e.printStackTrace();
                 }
+            }
+        }
+        else {
+            if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
+                mGoogleApiClient.connect();
             }
         }
     }
@@ -368,10 +371,9 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
         if (location == null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-        }
-        else {
+        } else {
             handleNewLocation(location, true);
-        };
+        }
     }
 
     private void handleNewLocation(Location location, boolean moveCamera) {
@@ -403,7 +405,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         if (connectionResult.hasResolution()) {
             try {
                 // Start an Activity that tries to resolve the error
-                connectionResult.startResolutionForResult(DiscoverActivity.this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+                connectionResult.startResolutionForResult(DiscoverActivity.this, Constants.ActivityConstants.CONNECTION_FAILURE_RESOLUTION_REQUEST);
             } catch (IntentSender.SendIntentException e) {
                 e.printStackTrace();
             }

@@ -84,7 +84,7 @@ public class HelperClass {
             {
                 //cur.moveToNext();
 
-                if(cur.moveToFirst())
+                if(cur.moveToLast())
                 {
                     do
                     {
@@ -107,7 +107,7 @@ public class HelperClass {
                         Log.d(TAG, "Location name: " + coWork.getLocationName());
                         Log.d(TAG, "Location activity: " + coWork.getActivityType());
 
-                    }while(cur.moveToNext());
+                    }while(cur.moveToPrevious());
                 }
 
                 cur.close();
