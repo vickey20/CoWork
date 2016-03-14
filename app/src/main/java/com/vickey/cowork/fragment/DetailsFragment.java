@@ -139,11 +139,14 @@ public class DetailsFragment extends Fragment {
         mSpinnerActivity.setAdapter(adapterActivity);
 
         Calendar c = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
-        mTextViewTime.setText(sdf.format(c.getTime()));
-        sdf = new SimpleDateFormat("EEE, MMM dd");
-        mTextViewDate.setText(sdf.format(c.getTime()));
 
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
+        String time = sdf.format(c.getTime());
+        mTextViewTime.setText(time);
+
+        sdf = new SimpleDateFormat("EEE, MMM dd");
+        String date = sdf.format(c.getTime());
+        mTextViewDate.setText(date);
     }
 
     public int getNumAttendees(int checkedId){
