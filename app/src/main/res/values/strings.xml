@@ -47,6 +47,7 @@
     <string name="label_five">Five</string>
     <string name="label_time">Choose a time</string>
     <string name="label_date">Choose a date</string>
+    <string name="label_time_instant">Time</string>
 
     <!-- Strings related to SelectLocationFragment -->
     <string name="toast_drop_pin_message">Press and hold on map to drop pin</string>

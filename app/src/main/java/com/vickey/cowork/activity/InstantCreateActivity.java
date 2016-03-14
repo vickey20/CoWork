@@ -2,7 +2,11 @@ package com.vickey.cowork.activity;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.DatePickerDialog;
+import android.app.Dialog;
+import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.app.TimePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -15,7 +19,16 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -31,20 +44,26 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStates;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.model.LatLng;
+import com.vickey.cowork.CoWork;
 import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.ConnectionDetector;
 import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
-public class InstantCreateActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, LocationListener, GoogleApiClient.OnConnectionFailedListener {
+public class InstantCreateActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, LocationListener, GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
     public static final String TAG = InstantCreateActivity.class.getSimpleName();
 
-    SharedPreferences mSharedPref;
-    SharedPreferences.Editor mEditor;
+    private SharedPreferences mSharedPref;
+    private SharedPreferences.Editor mEditor;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
@@ -53,10 +72,32 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
 
     private ProgressDialog mProgressDialog;
 
+    private TextView mTextViewAddress, mTextViewTime, mTextViewDate;
+    private Spinner mSpinnerActivity;
+    private Button mButtonCreateCowork;
+
+    private String[] mActivities;
+    private double mLatitude, mLongitude;
+    private String mAddress, mTime, mDate;
+    private int mActivityPosition;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_instant_create);
+
+        mTextViewAddress = (TextView) findViewById(R.id.textViewLocationName);
+        mTextViewTime = (TextView) findViewById(R.id.textViewTime);
+        mTextViewDate = (TextView) findViewById(R.id.textViewDate);
+        mSpinnerActivity = (Spinner) findViewById(R.id.spinnerActivity);
+        mButtonCreateCowork = (Button) findViewById(R.id.buttonCreateInstantCowork);
+
+        mButtonCreateCowork.setOnClickListener(this);
+        mTextViewTime.setOnClickListener(this);
+        mTextViewDate.setOnClickListener(this);
+
+        mTextViewAddress.setText("Locating you...");
+        mActivities =  getResources().getStringArray(R.array.array_activities);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .addConnectionCallbacks(this)
@@ -79,6 +120,33 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
         }
         showLoadingDialog();
         mHelper = new HelperClass(InstantCreateActivity.this);
+
+        mSpinnerActivity.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "selected activity: " + mActivities[position]);
+                mActivityPosition = position;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+
+            }
+        });
+
+        ArrayAdapter<String> adapterActivity = new ArrayAdapter<String>(InstantCreateActivity.this, android.R.layout.simple_spinner_dropdown_item, mActivities);
+        mSpinnerActivity.setAdapter(adapterActivity);
+
+        Calendar c = Calendar.getInstance();
+
+        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
+        mTime = sdf.format(c.getTime());
+        mTextViewTime.setText(mTime);
+
+        sdf = new SimpleDateFormat("EEE, MMM dd");
+        mDate = sdf.format(c.getTime());
+        mTextViewDate.setText(mDate);
+
     }
 
     @Override
@@ -267,9 +335,13 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
 
                 Address addr = addressList.get(0);
                 Log.d(TAG, "address: " + addr);
-                String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
-                Log.d(TAG, "address fine: " + address);
+                mAddress = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
+                Log.d(TAG, "address fine: " + mAddress);
                 dismissLoadingDialog();
+                mTextViewAddress.setText(mAddress);
+
+                mLatitude = location.getLatitude();
+                mLongitude = location.getLongitude();
             }
             else {
                 Toast.makeText(InstantCreateActivity.this, "Could not connect to internet", Toast.LENGTH_LONG).show();
@@ -321,6 +393,142 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
             }
         } else {
             Log.i(TAG, "Location services connection failed with code " + connectionResult.getErrorCode());
+        }
+    }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case R.id.textViewTime:
+                DialogFragment timeFragment = new StartTimePicker();
+                timeFragment.show(getFragmentManager(), "start_time_picker");
+                break;
+
+            case R.id.textViewDate:
+                DialogFragment dialogFragment = new StartDatePicker();
+                dialogFragment.show(getFragmentManager(), "start_date_picker");
+                break;
+
+            case R.id.buttonCreateInstantCowork:
+                CoWork coWork = createCowork();
+
+                mHelper = new HelperClass(InstantCreateActivity.this);
+                ProgressDialog pd = ProgressDialog.show(InstantCreateActivity.this, "CoWork", "Saving...", false, false);
+                if(mHelper.saveCoworkToDatabase(coWork) == 1){
+                    if(pd != null){
+                        pd.cancel();
+                    }
+                    if (mGoogleApiClient.isConnected()) {
+                        LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
+                        mGoogleApiClient.disconnect();
+                    }
+
+                    finish();
+                } else {
+                    Toast.makeText(InstantCreateActivity.this, "Could not create CoWork...", Toast.LENGTH_LONG).show();
+                }
+
+                break;
+        }
+    }
+
+    private CoWork createCowork() {
+        CoWork coWork = new CoWork();
+        coWork.setCreatorID(HomeActivity.USER_ID);
+        coWork.setLocationLat(String.valueOf(mLatitude));
+        coWork.setLocationLng(String.valueOf(mLongitude));
+        coWork.setLocationName(mAddress);
+        coWork.setActivityType(mActivityPosition);
+        coWork.setTime(mTime);
+        coWork.setDate(mDate);
+        return coWork;
+    }
+
+    class StartTimePicker extends DialogFragment implements TimePickerDialog.OnTimeSetListener{
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // TODO Auto-generated method stub
+
+            Calendar c = Calendar.getInstance();
+            int hour = c.get(Calendar.HOUR_OF_DAY);
+            int minute = c.get(Calendar.MINUTE);
+
+            // Use the current date as the default date in the picker
+            TimePickerDialog dialog = new TimePickerDialog(getActivity(), this, hour, minute, false);
+
+            return dialog;
+
+        }
+
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            // TODO Auto-generated method stub
+
+            Calendar calNow = Calendar.getInstance();
+            Calendar calSet = (Calendar) calNow.clone();
+
+            calSet.set(Calendar.HOUR_OF_DAY, hourOfDay);
+            calSet.set(Calendar.MINUTE, minute);
+            calSet.set(Calendar.SECOND, 0);
+            calSet.set(Calendar.MILLISECOND, 0);
+
+            if (calSet.compareTo(calNow) <= 0) {
+
+                calSet.add(Calendar.DATE, 1);
+            }
+
+            updateTimeField(calSet);
+        }
+    }
+
+
+    public void updateTimeField(Calendar calendar) {
+        mTime = (String) DateFormat.format("hh:mm a", calendar.getTime());
+        mTextViewTime.setText(mTime);
+    }
+
+
+    class StartDatePicker extends DialogFragment implements DatePickerDialog.OnDateSetListener{
+
+        @Override
+        public Dialog onCreateDialog(Bundle savedInstanceState) {
+            // TODO Auto-generated method stub
+
+            Calendar c = Calendar.getInstance();
+            int startYear = c.get(Calendar.YEAR);
+            int startMonth = c.get(Calendar.MONTH);
+            int startDay = c.get(Calendar.DAY_OF_MONTH);
+
+            // Use the current date as the default date in the picker
+            DatePickerDialog dialog = new DatePickerDialog(getActivity(), this, startYear, startMonth, startDay);
+
+            return dialog;
+
+        }
+        @Override
+        public void onDateSet(DatePicker view, int year, int monthOfYear,
+                              int dayOfMonth) {
+            // TODO Auto-generated method stub
+            updateDateField(year, monthOfYear + 1, dayOfMonth);
+        }
+    }
+
+    public void updateDateField(int startYear, int startMonth, int startDay) {
+
+        try {
+            SimpleDateFormat initial = new SimpleDateFormat("MM-dd-yyyy", Locale.US);
+            Date date = initial.parse("" + startMonth + "-" + startDay + "-" + startYear +"");
+
+            SimpleDateFormat finalFormat = new SimpleDateFormat("EEE, MMM dd", Locale.US);
+
+            mDate = finalFormat.format(date);
+
+            Log.d("MainActivity", "date: " + mDate);
+            mTextViewDate.setText(mDate);
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 }

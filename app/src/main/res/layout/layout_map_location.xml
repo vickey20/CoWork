@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        card_view:cardCornerRadius="2dp"
+        card_view:cardElevation="7dp"
+        card_view:cardUseCompatPadding="true">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/imageViewMap"
+                android:layout_width="fill_parent"
+                android:layout_height="200dp"
+                android:src="@drawable/maps_shot"
+                android:scaleType="fitXY"/>
+            <TextView
+                android:id="@+id/textViewLocationName"
+                android:layout_width="fill_parent"
+                android:layout_height="50dp"
+                android:paddingLeft="@dimen/activity_horizontal_margin"
+                android:paddingRight="@dimen/activity_horizontal_margin"
+                android:layout_gravity="bottom"
+                android:gravity="center_vertical"
+                android:background="@color/black"
+                android:alpha="0.5"
+                android:textColor="#fff"
+                android:textSize="20sp"
+                android:text="Sample Location"
+                android:layout_alignBottom="@+id/imageViewMap"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true" />
+
+        </RelativeLayout>
+    </android.support.v7.widget.CardView>
+</LinearLayout>

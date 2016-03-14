@@ -58,7 +58,10 @@
             android:name=".activity.ViewProfileActivity"
             android:label="Profile"
             android:screenOrientation="portrait"></activity>
-        <activity android:name=".activity.InstantCreateActivity"></activity>
+        <activity android:name=".activity.InstantCreateActivity"
+            android:label="Instant CoWork">
+
+        </activity>
     </application>
 
 </manifest>
