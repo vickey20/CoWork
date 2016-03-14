@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
+import android.widget.Toast;
 
 import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.Constants;
@@ -135,8 +136,14 @@ public class ViewProfileActivity extends AppCompatActivity {
     public void setProfilePhoto(){
         File imgFile = new  File(String.valueOf(ImagePicker.getImagePath(getApplicationContext())));
         if(imgFile.exists()){
-            Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-            mImageViewPhoto.setImageBitmap(myBitmap);
+            try {
+                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                mImageViewPhoto.setImageBitmap(myBitmap);
+            } catch (Exception e) {
+                e.printStackTrace();
+                Toast.makeText(ViewProfileActivity.this, "Could not get profile picture", Toast.LENGTH_LONG).show();
+                mImageViewPhoto.setBackgroundResource(R.drawable.profile);
+            }
         }
         else{
             mImageViewPhoto.setBackgroundResource(R.drawable.profile);

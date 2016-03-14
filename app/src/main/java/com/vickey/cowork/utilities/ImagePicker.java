@@ -19,8 +19,10 @@ import android.os.Parcelable;
 import android.provider.MediaStore;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -90,10 +92,28 @@ public class ImagePicker {
             bm = getImageResized(context, selectedImage);
             int rotation = getRotation(context, selectedImage, isCamera);
             bm = rotate(bm, rotation);
+
+            saveUpdateBitmapToFile(context, bm, imageFile);
         }
         return bm;
     }
 
+    private static void saveUpdateBitmapToFile(Context context, Bitmap bm, File imageFile) {
+
+        try {
+            Bitmap bitmap = bm;
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            bitmap.compress(Bitmap.CompressFormat.PNG, 0 /*ignored for PNG*/, bos);
+            byte[] bitmapdata = bos.toByteArray();
+
+            FileOutputStream fos = new FileOutputStream(imageFile);
+            fos.write(bitmapdata);
+            fos.flush();
+            fos.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
     public static File getImagePath(Context context) {
         File imageFile = new File(context.getExternalFilesDir(null), TEMP_IMAGE_NAME);
@@ -141,7 +161,7 @@ public class ImagePicker {
      **/
     private static Bitmap getImageResized(Context context, Uri selectedImage) {
         Bitmap bm = null;
-        int[] sampleSizes = new int[]{5, 3, 2, 1};
+        int[] sampleSizes = new int[]{10, 8, 6, 4, 2};
         int i = 0;
         do {
             bm = decodeBitmap(context, selectedImage, sampleSizes[i]);
