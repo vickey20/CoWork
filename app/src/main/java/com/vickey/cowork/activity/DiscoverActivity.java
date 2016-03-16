@@ -96,7 +96,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             initializeMap();
         }
 
-        mHelper = new HelperClass(DiscoverActivity.this);
+        mHelper = new HelperClass(getApplicationContext());
     }
 
     public void initializeMap(){

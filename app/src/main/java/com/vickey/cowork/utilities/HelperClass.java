@@ -14,6 +14,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.vickey.cowork.CoWork;
+import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
 
 import java.io.ByteArrayOutputStream;
@@ -31,17 +32,12 @@ public class HelperClass {
 
     private final String TAG = "HelperClass";
 
-    private SharedPreferences mSp;
-    private SharedPreferences.Editor mEditor;
-
     private SQLiteDatabase mDatabase;
 
     private Context mContext;
 
     public HelperClass(Context context){
         mContext = context;
-        mSp = PreferenceManager.getDefaultSharedPreferences(mContext);
-        mEditor = mSp.edit();
     }
 
     public int initializeDatabase() {
@@ -65,9 +61,12 @@ public class HelperClass {
 
     public void deleteDatabase(){
         mContext.deleteDatabase(Constants.MyDatabase.DATABASE_NAME);
-        mEditor.putInt(Constants.PreferenceKeys.DATABASE_CREATION_FLAG, 0);
-        mEditor.putInt(Constants.PreferenceKeys.TABLE_COWORK_POPULATED_FLAG, 0);
-        mEditor.commit();
+
+        SharedPreferences sp = PreferenceManager.getDefaultSharedPreferences(mContext);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putInt(Constants.PreferenceKeys.DATABASE_CREATION_FLAG, 0);
+        editor.putInt(Constants.PreferenceKeys.TABLE_COWORK_POPULATED_FLAG, 0);
+        editor.commit();
 
         Toast.makeText(mContext, "Database recreated", Toast.LENGTH_LONG).show();
     }
@@ -261,16 +260,21 @@ public class HelperClass {
 
     public void saveProfileToPreference(UserProfile profile){
 
-        mEditor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
-        mEditor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_FACEBOOK);
+        Log.d(TAG, "saveProfileToPreference");
 
-        mEditor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
-        mEditor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
-        mEditor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, profile.getEmail());
-        mEditor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, profile.getGender());
-        mEditor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, profile.getProfession());
+        SharedPreferences sp = mContext.getSharedPreferences(mContext.getResources().getString(R.string.login_shared_pref) , Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
 
-        mEditor.commit();
+        editor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
+        editor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_FACEBOOK);
+
+        editor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
+        editor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
+        editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, profile.getEmail());
+        editor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, profile.getGender());
+        editor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, profile.getProfession());
+
+        editor.commit();
     }
 
     public ArrayList<CoWork> getNearbyCoworkList(Location location){

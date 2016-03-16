@@ -176,8 +176,8 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 }
 
                 if(mTracker == 3){
-                    HelperClass helperClass = new HelperClass(CreateActivity.this);
-                    ProgressDialog pd = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
+                    HelperClass helperClass = new HelperClass(getApplicationContext());
+                    ProgressDialog pd = ProgressDialog.show(getApplicationContext(), "CoWork", "Saving...", false, false);
                     if(helperClass.saveCoworkToDatabase(mCoWork) == 1){
                         if(pd != null){
                             pd.cancel();

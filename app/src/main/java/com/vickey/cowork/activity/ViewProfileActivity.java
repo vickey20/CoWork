@@ -23,6 +23,8 @@ import java.io.File;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
+    private final String TAG = ViewProfileActivity.class.getSimpleName();
+
     SharedPreferences mSharedPref;
     RoundImageView mImageViewPhoto;
     ImageView mImageViewPhotoEdit;
@@ -57,6 +59,8 @@ public class ViewProfileActivity extends AppCompatActivity {
         if(!name.equals("")){
             mEditTextName.setText(name);
         }
+
+        Log.d(TAG, "name: " + name);
 
         String email = mSharedPref.getString(Constants.PreferenceKeys.KEY_USER_EMAIL, "");
         if(!email.equals("")){

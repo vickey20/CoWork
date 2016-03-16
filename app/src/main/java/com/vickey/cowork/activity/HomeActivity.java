@@ -52,7 +52,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         mDatabaseSharedPref = getSharedPreferences(getString(R.string.database_shared_pref), Context.MODE_PRIVATE);
         if(mDatabaseSharedPref.getInt(Constants.PreferenceKeys.DATABASE_CREATION_FLAG, 0) == Constants.MyDatabase.DATABASE_NOT_CREATED){
-            HelperClass helperClass = new HelperClass(HomeActivity.this);
+            HelperClass helperClass = new HelperClass(getApplicationContext());
             if(helperClass.initializeDatabase() == 1){
                 SharedPreferences.Editor editor = mDatabaseSharedPref.edit();
                 editor.putInt(Constants.PreferenceKeys.DATABASE_CREATION_FLAG, Constants.MyDatabase.DATABASE_CREATED);
@@ -85,11 +85,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     protected void onResume() {
         super.onResume();
 
-        HelperClass helperClass = new HelperClass(HomeActivity.this);
+        HelperClass helperClass = new HelperClass(getApplicationContext());
         ArrayList<CoWork> coWorks = helperClass.getUserCoworkList();
 
         if(coWorks.size() > 0){
-            mAdapter = new CardViewAdapter(HomeActivity.this, coWorks);
+            mAdapter = new CardViewAdapter(getApplicationContext(), coWorks);
             mRecyclerView.setAdapter(mAdapter);
             mCardViewStartup.setVisibility(CardView.GONE);
             mRecyclerView.setVisibility(RecyclerView.VISIBLE);

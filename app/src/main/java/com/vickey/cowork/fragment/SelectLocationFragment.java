@@ -93,7 +93,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = getActivity();
+        mContext = getActivity().getApplicationContext();
         mCoder = new Geocoder(mContext);
         mVibrator = (Vibrator) getActivity().getSystemService(mContext.VIBRATOR_SERVICE);
     }

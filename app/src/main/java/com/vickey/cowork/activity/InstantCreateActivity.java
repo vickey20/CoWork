@@ -134,7 +134,7 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
             }
         });
 
-        ArrayAdapter<String> adapterActivity = new ArrayAdapter<String>(InstantCreateActivity.this, android.R.layout.simple_spinner_dropdown_item, mActivities);
+        ArrayAdapter<String> adapterActivity = new ArrayAdapter<String>(getApplicationContext(), android.R.layout.simple_spinner_dropdown_item, mActivities);
         mSpinnerActivity.setAdapter(adapterActivity);
 
         Calendar c = Calendar.getInstance();
@@ -412,8 +412,8 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
             case R.id.buttonCreateInstantCowork:
                 CoWork coWork = createCowork();
 
-                mHelper = new HelperClass(InstantCreateActivity.this);
-                ProgressDialog pd = ProgressDialog.show(InstantCreateActivity.this, "CoWork", "Saving...", false, false);
+                mHelper = new HelperClass(getApplicationContext());
+                ProgressDialog pd = ProgressDialog.show(getApplicationContext(), "CoWork", "Saving...", false, false);
                 if(mHelper.saveCoworkToDatabase(coWork) == 1){
                     if(pd != null){
                         pd.cancel();
