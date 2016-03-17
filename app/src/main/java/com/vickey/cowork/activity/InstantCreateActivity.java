@@ -81,6 +81,8 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
     private String mAddress, mTime, mDate;
     private int mActivityPosition;
 
+    private boolean locationRequestCanceled = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -110,14 +112,8 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
 
-        mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
-        int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
-        if(p == 0){
-            checkPermission();
-        }
-        else{
-            mGoogleApiClient.connect();
-        }
+        mGoogleApiClient.connect();
+
         showLoadingDialog();
         mHelper = new HelperClass(InstantCreateActivity.this);
 
@@ -150,11 +146,21 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onStart() {
+        super.onStart();
 
         performLocationEnabledCheck();
         performNetworkCheck();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+/*
+        if (locationRequestCanceled == false) {
+            performLocationEnabledCheck();
+        }
+        performNetworkCheck();*/
     }
 
     @Override
@@ -164,58 +170,6 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
         if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
-        }
-    }
-
-    private void checkPermission(){
-        //Check app permission for accessing location
-        int permissionCheck = ContextCompat.checkSelfPermission(InstantCreateActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if(permissionCheck != PackageManager.PERMISSION_GRANTED){
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(InstantCreateActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-
-            } else {
-
-                ActivityCompat.requestPermissions(InstantCreateActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        Constants.ActivityConstants.PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
-
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case Constants.ActivityConstants.PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    Log.d(TAG, "permission granted");
-
-                    mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_GRANTED);
-                    mEditor.commit();
-                } else {
-
-                    mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
-                    mEditor.commit();
-
-                    // TODO: 12/14/2015 Remove this later and let user type an address instead of using current location
-                    finish();
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 
@@ -273,10 +227,14 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
                         Log.d(TAG, "Location turned on.");
+                        mGoogleApiClient.connect();
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
+                        locationRequestCanceled = true;
                         Log.d(TAG, "Location not turned on.");
+                        dismissLoadingDialog();
+                        mTextViewAddress.setText("Couldn't locate you...");
                         break;
                     default:
                         break;
@@ -310,10 +268,6 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
                 mGoogleApiClient.connect();
             }
         }
-    }
-
-    private void initializeViews() {
-
     }
 
     private void showLoadingDialog(){

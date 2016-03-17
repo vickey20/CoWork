@@ -215,6 +215,14 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+
+        performLocationEnabledCheck();
+        performNetworkCheck();
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         Log.d(TAG, "onResume");
@@ -223,9 +231,6 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         mCoder = new Geocoder(mContext);
 
         setUpMapIfNeeded();
-
-        performLocationEnabledCheck();
-        performNetworkCheck();
     }
 
     private void performLocationEnabledCheck(){
@@ -282,6 +287,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
                         Log.d(TAG, "Location turned on.");
+                        mGoogleApiClient.connect();
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
