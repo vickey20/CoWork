@@ -1,22 +1,17 @@
 package com.vickey.cowork.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -87,94 +82,29 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                 .setInterval(10 * 1000)        // 10 seconds, in milliseconds
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
 
-        mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
-        int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
-        if(p == 0){
-            checkPermission();
-        }
-        else{
-            initializeMap();
-        }
-
-        mHelper = new HelperClass(DiscoverActivity.this);
-    }
-
-    public void initializeMap(){
-        setUpMapIfNeeded();
-
-        mMap.setOnMapClickListener(this);
-        mMap.setOnMapLongClickListener(this);
-
         mGoogleApiClient.connect();
-    }
 
-    private void checkPermission(){
-        //Check app permission for accessing location
-        int permissionCheck = ContextCompat.checkSelfPermission(DiscoverActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if(permissionCheck != PackageManager.PERMISSION_GRANTED){
-
-            if (ActivityCompat.shouldShowRequestPermissionRationale(DiscoverActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-
-            } else {
-
-                ActivityCompat.requestPermissions(DiscoverActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        Constants.ActivityConstants.PERMISSION_REQUEST_ACCESS_FINE_LOCATION);
-
-            }
-        }
+        mHelper = new HelperClass(getApplicationContext());
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case Constants.ActivityConstants.PERMISSION_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+    protected void onStart() {
+        super.onStart();
 
-                    Log.d(TAG, "permission granted");
-
-                    mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_GRANTED);
-                    mEditor.commit();
-                    initializeMap();
-                } else {
-
-                    mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
-                    mEditor.commit();
-
-                    // TODO: 12/14/2015 Remove this later and let user type an address instead of using current location
-                    finish();
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
+        performLocationEnabledCheck();
+        performNetworkCheck();
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
 
         setUpMapIfNeeded();
-
-        performLocationEnabledCheck();
-        performNetworkCheck();
-
         new GetCoWorksTask().execute();
     }
 
     private void performLocationEnabledCheck(){
+        Log.d(TAG, "performLocationEnabledCheck");
         LocationSettingsRequest.Builder builder = new LocationSettingsRequest.Builder()
                 .addLocationRequest(mLocationRequest);
 
@@ -228,6 +158,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
                         Log.d(TAG, "Location turned on.");
+                        mGoogleApiClient.connect();
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
@@ -241,6 +172,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     }
 
     private void performNetworkCheck(){
+        Log.d(TAG, "performNetworkCheck");
         if(ConnectionDetector.isConnectedToInternet(DiscoverActivity.this) == false){
             Toast.makeText(DiscoverActivity.this, "Could not connect to internet", Toast.LENGTH_LONG).show();
             Location lastLocation = LocationServices.FusedLocationApi.getLastLocation(
@@ -350,6 +282,8 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         });
         //mMap.addMarker(new MarkerOptions().position(new LatLng(0, 0)).title("Marker"));
         mMap.setMyLocationEnabled(true);
+        mMap.setOnMapClickListener(this);
+        mMap.setOnMapLongClickListener(this);
     }
 
     private ArrayList<CoWork> getNearbyCoworkList(){

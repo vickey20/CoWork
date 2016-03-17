@@ -5,6 +5,7 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -31,12 +32,7 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
         DetailsFragment.DetailsListener,
         ShareFragment.ShareListener {
 
-    private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 201;
-
     private final String TAG = "CreateActivity";
-
-    private SharedPreferences mSharedPref;
-    private SharedPreferences.Editor mEditor;
 
     //UI widgets
     private ViewPager mViewPager;
@@ -71,14 +67,7 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
         mViewPager.setOffscreenPageLimit(3);
         mAdapter = new MyAdapter(mFragmentManager);
 
-        mSharedPref = getSharedPreferences(getString(R.string.create_cowork_shared_pref), Context.MODE_PRIVATE);
-        int p = mSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
-        if(p == 0){
-            checkPermission();
-        }
-        else{
-            mViewPager.setAdapter(mAdapter);
-        }
+        mViewPager.setAdapter(mAdapter);
 
         mCoWork = new CoWork();
 
@@ -176,8 +165,8 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 }
 
                 if(mTracker == 3){
-                    HelperClass helperClass = new HelperClass(CreateActivity.this);
-                    ProgressDialog pd = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
+                    HelperClass helperClass = new HelperClass(getApplicationContext());
+                    ProgressDialog pd = ProgressDialog.show(getApplicationContext(), "CoWork", "Saving...", false, false);
                     if(helperClass.saveCoworkToDatabase(mCoWork) == 1){
                         if(pd != null){
                             pd.cancel();
@@ -189,69 +178,5 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 break;
         }
     }
-
-
-    private void checkPermission(){
-        //Check app permission for accessing location
-        int permissionCheck = ContextCompat.checkSelfPermission(CreateActivity.this,
-                Manifest.permission.ACCESS_FINE_LOCATION);
-
-        if(permissionCheck != PackageManager.PERMISSION_GRANTED){
-
-            // Should we show an explanation?
-            if (ActivityCompat.shouldShowRequestPermissionRationale(CreateActivity.this,
-                    Manifest.permission.ACCESS_FINE_LOCATION)) {
-
-                // Show an expanation to the user *asynchronously* -- don't block
-                // this thread waiting for the user's response! After the user
-                // sees the explanation, try again to request the permission.
-
-            } else {
-
-                // No explanation needed, we can request the permission.
-
-                ActivityCompat.requestPermissions(CreateActivity.this,
-                        new String[]{Manifest.permission.ACCESS_FINE_LOCATION},
-                        MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION);
-
-                // MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION is an
-                // app-defined int constant. The callback method gets the
-                // result of the request.
-            }
-        }
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode,
-                                           String permissions[], int[] grantResults) {
-        switch (requestCode) {
-            case MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                    Log.d(TAG, "permission granted");
-
-                    mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_GRANTED);
-                    mEditor.commit();
-                    mViewPager.setAdapter(mAdapter);
-                } else {
-
-                    mEditor = mSharedPref.edit();
-                    mEditor.putInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
-                    mEditor.commit();
-
-                    // TODO: 12/14/2015 Remove this later and let user type an address instead of using current location
-                    finish();
-                }
-                return;
-            }
-
-            // other 'case' lines to check for other
-            // permissions this app might request
-        }
-    }
-
 
 }

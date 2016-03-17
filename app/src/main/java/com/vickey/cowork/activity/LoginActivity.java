@@ -203,10 +203,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                             Log.d(TAG, userProfile.getName());
                             Log.d(TAG, userProfile.getGender());
                             /*
-                                 Call the Helper to send user profile to the web server.
+                                 TODO: Call the Helper to send user profile to the web server.
                                  When Helper returns, save the profile in preferences.
                             */
-                            mHelper = new HelperClass(LoginActivity.this);
+                            mHelper = new HelperClass(getApplicationContext());
                             mHelper.saveProfileToPreference(userProfile);
 
                             Thread.sleep(1000);

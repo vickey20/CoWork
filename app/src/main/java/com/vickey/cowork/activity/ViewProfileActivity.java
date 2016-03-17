@@ -23,6 +23,8 @@ import java.io.File;
 
 public class ViewProfileActivity extends AppCompatActivity {
 
+    private final String TAG = ViewProfileActivity.class.getSimpleName();
+
     SharedPreferences mSharedPref;
     RoundImageView mImageViewPhoto;
     ImageView mImageViewPhotoEdit;
@@ -41,6 +43,8 @@ public class ViewProfileActivity extends AppCompatActivity {
         mEditTextProfession = (EditText) findViewById(R.id.editTextProfession);
         mEditTextAge = (EditText) findViewById(R.id.editTextAge);
 
+        mEditTextAge.setKeyListener(null);
+
         mRadioGroup = (RadioGroup) findViewById(R.id.radioGroupGender);
 
         mSharedPref = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
@@ -57,6 +61,8 @@ public class ViewProfileActivity extends AppCompatActivity {
         if(!name.equals("")){
             mEditTextName.setText(name);
         }
+
+        Log.d(TAG, "name: " + name);
 
         String email = mSharedPref.getString(Constants.PreferenceKeys.KEY_USER_EMAIL, "");
         if(!email.equals("")){
