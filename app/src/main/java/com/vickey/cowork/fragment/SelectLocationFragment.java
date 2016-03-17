@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.location.Address;
 import android.location.Geocoder;
@@ -67,9 +66,6 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     private SupportMapFragment mSupportMapFragment;
 
     Context mContext;
-
-    SharedPreferences mSharedPref;
-    SharedPreferences.Editor mEditor;
 
     private GoogleMap mMap;
     private GoogleApiClient mGoogleApiClient;
