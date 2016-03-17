@@ -1,20 +1,11 @@
 package com.vickey.cowork.activity;
 
-import android.Manifest;
 import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewPager;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
@@ -24,7 +15,7 @@ import com.vickey.cowork.fragment.DetailsFragment;
 import com.vickey.cowork.R;
 import com.vickey.cowork.fragment.SelectLocationFragment;
 import com.vickey.cowork.fragment.ShareFragment;
-import com.vickey.cowork.utilities.Constants;
+import com.vickey.cowork.utilities.CustomViewPager;
 import com.vickey.cowork.utilities.HelperClass;
 
 public class CreateActivity extends FragmentActivity implements View.OnClickListener,
@@ -35,7 +26,7 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
     private final String TAG = "CreateActivity";
 
     //UI widgets
-    private ViewPager mViewPager;
+    private CustomViewPager mViewPager;
     private TextView mNext;
     private TextView mPrev;
 
@@ -56,9 +47,11 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
-        mViewPager = (ViewPager) findViewById(R.id.viewPager);
+        mViewPager = (CustomViewPager) findViewById(R.id.viewPager);
         mPrev = (TextView) findViewById(R.id.textViewPrevious);
         mNext = (TextView) findViewById(R.id.textViewNext);
+
+        mViewPager.setPagingEnabled(false);
 
         mPrev.setOnClickListener(CreateActivity.this);
         mNext.setOnClickListener(CreateActivity.this);
@@ -147,18 +140,13 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 if(mTracker == 0){
                     mPrev.setEnabled(false);
                 }
+
                 break;
 
             case R.id.textViewNext:
                 ++mTracker;
                 if(mTracker > 0 && mTracker < 3){
                     mViewPager.setCurrentItem(mTracker);
-                    if(mTracker == 2){
-                        mNext.setText("Done");
-                    }
-                    else{
-                        mNext.setText("Next");
-                    }
                 }
                 if(mTracker > 0){
                     mPrev.setEnabled(true);
@@ -176,6 +164,12 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 }
 
                 break;
+        }
+        if(mTracker >= 2){
+            mNext.setText("Done");
+        }
+        else{
+            mNext.setText("Next");
         }
     }
 
