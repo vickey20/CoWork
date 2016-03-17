@@ -18,12 +18,8 @@ import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
 
 import java.io.ByteArrayOutputStream;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Calendar;
 
 /**
  * Created by vikram on 11/19/2015.
@@ -270,11 +266,33 @@ public class HelperClass {
 
         editor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
         editor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
+        editor.putInt(Constants.PreferenceKeys.KEY_USER_AGE, getAgeFromBday(profile.getBirthday()));
         editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, profile.getEmail());
         editor.putString(Constants.PreferenceKeys.KEY_USER_GENDER, profile.getGender());
         editor.putString(Constants.PreferenceKeys.KEY_USER_PROFESSION, profile.getProfession());
 
         editor.commit();
+    }
+
+    private int getAgeFromBday(String bday){
+
+        String[] array = bday.split("/");
+        int month = Integer.parseInt(array[0]);
+        int day = Integer.parseInt(array[1]);
+        int year = Integer.parseInt(array[2]);
+
+        Calendar dob = Calendar.getInstance();
+        Calendar today = Calendar.getInstance();
+
+        dob.set(year, month, day);
+
+        int age = today.get(Calendar.YEAR) - dob.get(Calendar.YEAR);
+
+        if (today.get(Calendar.DAY_OF_YEAR) < dob.get(Calendar.DAY_OF_YEAR)){
+            age--;
+        }
+
+        return age;
     }
 
     public ArrayList<CoWork> getNearbyCoworkList(Location location){

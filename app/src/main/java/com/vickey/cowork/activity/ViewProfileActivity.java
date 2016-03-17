@@ -43,6 +43,8 @@ public class ViewProfileActivity extends AppCompatActivity {
         mEditTextProfession = (EditText) findViewById(R.id.editTextProfession);
         mEditTextAge = (EditText) findViewById(R.id.editTextAge);
 
+        mEditTextAge.setKeyListener(null);
+
         mRadioGroup = (RadioGroup) findViewById(R.id.radioGroupGender);
 
         mSharedPref = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
