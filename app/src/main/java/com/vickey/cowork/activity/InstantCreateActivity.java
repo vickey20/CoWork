@@ -367,7 +367,7 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
                 CoWork coWork = createCowork();
 
                 mHelper = new HelperClass(getApplicationContext());
-                ProgressDialog pd = ProgressDialog.show(getApplicationContext(), "CoWork", "Saving...", false, false);
+                ProgressDialog pd = ProgressDialog.show(InstantCreateActivity.this, "CoWork", "Saving...", false, false);
                 if(mHelper.saveCoworkToDatabase(coWork) == 1){
                     if(pd != null){
                         pd.cancel();
