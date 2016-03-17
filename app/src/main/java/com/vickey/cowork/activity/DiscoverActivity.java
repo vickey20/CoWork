@@ -7,7 +7,6 @@ import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -51,9 +50,6 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         GoogleApiClient.OnConnectionFailedListener, LocationListener {
 
     public static final String TAG = DiscoverActivity.class.getSimpleName();
-
-    SharedPreferences mSharedPref;
-    SharedPreferences.Editor mEditor;
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;

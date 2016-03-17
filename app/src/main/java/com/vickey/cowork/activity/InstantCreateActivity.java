@@ -1,22 +1,16 @@
 package com.vickey.cowork.activity;
 
-import android.Manifest;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.format.DateFormat;
@@ -61,9 +55,6 @@ import java.util.Locale;
 public class InstantCreateActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, LocationListener, GoogleApiClient.OnConnectionFailedListener, View.OnClickListener {
 
     public static final String TAG = InstantCreateActivity.class.getSimpleName();
-
-    private SharedPreferences mSharedPref;
-    private SharedPreferences.Editor mEditor;
 
     private GoogleApiClient mGoogleApiClient;
     private LocationRequest mLocationRequest;
