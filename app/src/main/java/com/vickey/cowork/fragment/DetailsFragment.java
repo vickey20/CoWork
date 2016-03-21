@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.TimePicker;
 
 import com.vickey.cowork.R;
+import com.vickey.cowork.activity.CreateActivity;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -38,7 +39,7 @@ public class DetailsFragment extends Fragment {
 
     Spinner mSpinnerActivity;
     EditText mEditTextDescription;
-    TextView mTextViewTime, mTextViewDate, mTextViewCharCount;
+    TextView mTextViewLocation, mTextViewTime, mTextViewDate, mTextViewCharCount;
     RadioGroup mRadioGroup;
 
     int mCharCount = 0;
@@ -65,6 +66,7 @@ public class DetailsFragment extends Fragment {
 
         mSpinnerActivity = (Spinner) v.findViewById(R.id.spinnerActivity);
         mEditTextDescription = (EditText) v.findViewById(R.id.editTextDescription);
+        mTextViewLocation = (TextView) v.findViewById(R.id.textViewLocationName);
         mTextViewCharCount = (TextView) v.findViewById(R.id.textViewCharCount);
         mTextViewTime = (TextView) v.findViewById(R.id.textViewTime);
         mRadioGroup = (RadioGroup) v.findViewById(R.id.radioGroup);
@@ -173,6 +175,19 @@ public class DetailsFragment extends Fragment {
     public static DetailsFragment newInstance() {
         DetailsFragment f = new DetailsFragment();
         return f;
+    }
+
+    @Override
+    public void setUserVisibleHint(boolean isVisibleToUser) {
+        super.setUserVisibleHint(isVisibleToUser);
+        if(isVisibleToUser) {
+            String address = CreateActivity.mCoWork.getLocationName();
+            if(address != null && address != "") {
+                mTextViewLocation.setText(address);
+            } else {
+                mTextViewLocation.setText("Couldn't get location");
+            }
+        }
     }
 
     @Override

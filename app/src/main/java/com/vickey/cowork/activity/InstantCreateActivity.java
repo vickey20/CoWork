@@ -8,7 +8,6 @@ import android.app.ProgressDialog;
 import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.content.IntentSender;
-import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -72,8 +71,6 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
     private double mLatitude, mLongitude;
     private String mAddress, mTime, mDate;
     private int mActivityPosition;
-
-    private boolean locationRequestCanceled = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,11 +145,6 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
     @Override
     protected void onResume() {
         super.onResume();
-/*
-        if (locationRequestCanceled == false) {
-            performLocationEnabledCheck();
-        }
-        performNetworkCheck();*/
     }
 
     @Override
@@ -223,7 +215,6 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
-                        locationRequestCanceled = true;
                         Log.d(TAG, "Location not turned on.");
                         dismissLoadingDialog();
                         mTextViewAddress.setText("Couldn't locate you...");

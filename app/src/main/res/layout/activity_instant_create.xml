@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="@dimen/activity_horizontal_margin">
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -35,61 +35,63 @@
                     android:layout_marginTop="@dimen/activity_vertical_margin">
                 </Spinner>
 
-                <RelativeLayout
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
+                    android:layout_height="wrap_content"
+                    android:weightSum="2"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/activity_vertical_margin">
 
-                    <TextView
-                        android:id="@+id/labelTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:textSize="16dp"
-                        android:layout_alignParentLeft="true"
-                        android:text="@string/label_time_instant"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="left|center_vertical">
 
-                    <TextView
-                        android:id="@+id/textViewTime"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:drawableRight="@drawable/com_facebook_tooltip_blue_bottomnub"
-                        android:drawablePadding="20dp"
-                        android:textSize="18dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        android:layout_alignParentLeft="true"
-                        android:layout_below="@id/labelTime"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:layout_marginTop="@dimen/activity_vertical_margin">
-                    </TextView>
+                        <ImageView
+                            android:id="@+id/labelTime"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/clock"
+                            android:layout_marginRight="@dimen/activity_horizontal_margin"/>
 
-                    <TextView
-                        android:id="@+id/labelDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/activity_vertical_margin"
-                        android:textSize="16dp"
-                        android:layout_alignParentRight="true"
-                        android:text="@string/label_date"/>
+                        <TextView
+                            android:id="@+id/textViewTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless">
+                        </TextView>
+                    </LinearLayout>
 
-                    <TextView
-                        android:id="@+id/textViewDate"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:drawableRight="@drawable/com_facebook_tooltip_blue_bottomnub"
-                        android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                        android:drawablePadding="20dp"
-                        android:textSize="18dp"
-                        android:focusable="true"
-                        android:layout_alignParentRight="true"
-                        android:layout_below="@id/labelDate"
-                        android:background="?attr/selectableItemBackgroundBorderless"
-                        android:layout_marginTop="@dimen/activity_vertical_margin">
-                    </TextView>
-                </RelativeLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="right|center_vertical">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/date_image"
+                            android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+                        <TextView
+                            android:id="@+id/textViewDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless">
+                        </TextView>
+                    </LinearLayout>
+                </LinearLayout>
             </LinearLayout>
-
             <Button
                 android:id="@+id/buttonCreateInstantCowork"
                 android:layout_width="200dp"

@@ -3,140 +3,168 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".fragment.DetailsFragment"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:descendantFocusability="beforeDescendants"
+    android:focusableInTouchMode="true">
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true"
-        android:padding="16dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
+            <include layout="@layout/layout_map_location"></include>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textSize="16dp"
-                android:text="@string/label_choose_activity"/>
+                android:orientation="vertical"
+                android:padding="@dimen/activity_horizontal_margin">
 
-            <Spinner
-                android:id="@+id/spinnerActivity"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_vertical_margin">
-            </Spinner>
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16dp"
+                    android:text="@string/label_choose_activity"/>
 
-            <EditText
-                android:id="@+id/editTextDescription"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:gravity="top|left"
-                android:textSize="18dp"
-                android:maxLength="200"
-                android:hint="@string/label_description"/>
+                <Spinner
+                    android:id="@+id/spinnerActivity"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/activity_vertical_margin">
+                </Spinner>
 
-            <TextView
-                android:id="@+id/textViewCharCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="5dp"
-                android:textSize="12dp"/>
+                <android.support.design.widget.TextInputLayout android:layout_width="match_parent"
+                    android:layout_height="wrap_content">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:textSize="16dp"
-                android:text="@string/label_num_people"/>
+                    <AutoCompleteTextView android:id="@+id/editTextDescription" android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/activity_vertical_margin"
+                        android:gravity="top|left"
+                        android:textSize="18dp"
+                        android:maxLength="200"
+                        android:hint="@string/label_description"/>
 
-            <Spinner
-                android:id="@+id/spinnerPeople"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:visibility="gone"
-                android:layout_marginTop="@dimen/activity_vertical_margin">
-            </Spinner>
+                </android.support.design.widget.TextInputLayout>
 
-            <RadioGroup
-                android:id="@+id/radioGroup"
-                android:layout_margin="10dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:weightSum="5">
-
-                <RadioButton
+                <TextView
+                    android:id="@+id/textViewCharCount"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_one"
-                    android:id="@+id/radioButton1" />
-                <RadioButton
-                    android:layout_width="wrap_content"
+                    android:layout_marginLeft="5dp"
+                    android:textSize="12dp"/>
+
+                <TextView
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_two"
-                    android:id="@+id/radioButton2" />
-                <RadioButton
-                    android:layout_width="wrap_content"
+                    android:layout_marginTop="@dimen/activity_vertical_margin"
+                    android:textSize="16dp"
+                    android:text="@string/label_num_people"/>
+
+                <Spinner
+                    android:id="@+id/spinnerPeople"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_three"
-                    android:id="@+id/radioButton3" />
-                <RadioButton
-                    android:layout_width="wrap_content"
+                    android:visibility="gone"
+                    android:layout_marginTop="@dimen/activity_vertical_margin">
+                </Spinner>
+
+                <RadioGroup
+                    android:id="@+id/radioGroup"
+                    android:layout_margin="10dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_four"
-                    android:id="@+id/radioButton4" />
-                <RadioButton
-                    android:layout_width="wrap_content"
+                    android:orientation="horizontal"
+                    android:weightSum="5">
+
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_one"
+                        android:id="@+id/radioButton1" />
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_two"
+                        android:id="@+id/radioButton2" />
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_three"
+                        android:id="@+id/radioButton3" />
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_four"
+                        android:id="@+id/radioButton4" />
+                    <RadioButton
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/label_five"
+                        android:id="@+id/radioButton5" />
+                </RadioGroup>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="@string/label_five"
-                    android:id="@+id/radioButton5" />
-            </RadioGroup>
+                    android:weightSum="2"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="@dimen/activity_vertical_margin">
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:textSize="16dp"
-                android:text="@string/label_time"/>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="left|center_vertical">
 
-            <TextView
-                android:id="@+id/textViewTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:drawableRight="@drawable/com_facebook_tooltip_blue_bottomnub"
-                android:drawablePadding="20dp"
-                android:textSize="18dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginTop="@dimen/activity_vertical_margin">
-            </TextView>
+                        <ImageView
+                            android:id="@+id/labelTime"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/clock"
+                            android:layout_marginRight="@dimen/activity_horizontal_margin"/>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/activity_vertical_margin"
-                android:textSize="16dp"
-                android:text="@string/label_date"/>
+                        <TextView
+                            android:id="@+id/textViewTime"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless">
+                        </TextView>
+                    </LinearLayout>
 
-            <TextView
-                android:id="@+id/textViewDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:drawableRight="@drawable/com_facebook_tooltip_blue_bottomnub"
-                android:layout_marginLeft="@dimen/activity_horizontal_margin"
-                android:drawablePadding="20dp"
-                android:textSize="18dp"
-                android:focusable="true"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginTop="@dimen/activity_vertical_margin">
-            </TextView>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:orientation="horizontal"
+                        android:gravity="right|center_vertical">
 
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:src="@drawable/date_image"
+                            android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+
+                        <TextView
+                            android:id="@+id/textViewDate"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textSize="18dp"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:background="?attr/selectableItemBackgroundBorderless">
+                        </TextView>
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

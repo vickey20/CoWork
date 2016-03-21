@@ -245,7 +245,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                         // All location settings are satisfied. The client can initialize location
                         // requests here.
                         Log.d(TAG, "Location available");
-                        if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
+                        if (mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
                             mGoogleApiClient.connect();
                         }
                         break;
@@ -392,31 +392,22 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             public void onMapLongClick(LatLng latLng) {
 
                 if (ConnectionDetector.isConnectedToInternet(getActivity())) {
-                    Geocoder coder = new Geocoder(mContext);
-                    try {
-                        ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude, latLng.longitude, 1);
 
-                        if (mVibrator != null) {
-                            mVibrator.vibrate(50);
-                        }
+                    String address = getAddressFromLocation(latLng);
 
-                        Address addr = addressList.get(0);
-                        Log.d(TAG, "address: " + addr);
-                        String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
-                        Log.d(TAG, "address fine: " + address);
-
-                        mMap.clear();
-                        MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(address);
-                        Marker marker = mMap.addMarker(markerOptions);
-                        marker.setDraggable(true);
-                        marker.showInfoWindow();
-                        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
-
-                        mListener.onLocationSet(address, latLng);
-
-                    } catch (IOException e) {
-                        e.printStackTrace();
+                    if (mVibrator != null) {
+                        mVibrator.vibrate(50);
                     }
+
+                    mMap.clear();
+                    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(address);
+                    Marker marker = mMap.addMarker(markerOptions);
+                    marker.setDraggable(true);
+                    marker.showInfoWindow();
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+
+                    mListener.onLocationSet(address, latLng);
+
                 } else {
                     Toast.makeText(getActivity(), "Could not connect to internet", Toast.LENGTH_LONG).show();
                 }
@@ -428,6 +419,23 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         Toast.makeText(mContext, getString(R.string.toast_drop_pin_message), Toast.LENGTH_LONG).show();
     }
 
+    private String getAddressFromLocation(LatLng latLng) {
+        Geocoder coder = new Geocoder(mContext);
+        try {
+            ArrayList<Address> addressList = (ArrayList<Address>) coder.getFromLocation(latLng.latitude, latLng.longitude, 1);
+
+            Address addr = addressList.get(0);
+            Log.d(TAG, "address: " + addr);
+            String address = addr.getAddressLine(0) + ", " + addr.getAddressLine(1);
+            Log.d(TAG, "address fine: " + address);
+
+            return address;
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "";
+    }
 
     /**
      * Create a new instance of SelectLocationFragment
@@ -478,6 +486,8 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
         }
+        String address = getAddressFromLocation(position);
+        mListener.onLocationSet(address, position);
     }
 
     @Override

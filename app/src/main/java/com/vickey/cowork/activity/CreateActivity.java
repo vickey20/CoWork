@@ -2,12 +2,14 @@ package com.vickey.cowork.activity;
 
 import android.app.ProgressDialog;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.vickey.cowork.CoWork;
@@ -18,7 +20,7 @@ import com.vickey.cowork.fragment.ShareFragment;
 import com.vickey.cowork.utilities.CustomViewPager;
 import com.vickey.cowork.utilities.HelperClass;
 
-public class CreateActivity extends FragmentActivity implements View.OnClickListener,
+public class CreateActivity extends AppCompatActivity implements View.OnClickListener,
         SelectLocationFragment.SelectLocationListener,
         DetailsFragment.DetailsListener,
         ShareFragment.ShareListener {
@@ -35,7 +37,9 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
     private MyAdapter mAdapter;
     FragmentManager mFragmentManager;
 
-    private CoWork mCoWork;
+    public static CoWork mCoWork;
+
+    private boolean isLocationSet;
 
     @Override
     protected void onResume() {
@@ -48,6 +52,8 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
         setContentView(R.layout.activity_create);
 
         mViewPager = (CustomViewPager) findViewById(R.id.viewPager);
+        getSupportActionBar().setTitle(R.string.select_location_fragment);
+
         mPrev = (TextView) findViewById(R.id.textViewPrevious);
         mNext = (TextView) findViewById(R.id.textViewNext);
 
@@ -55,6 +61,8 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
 
         mPrev.setOnClickListener(CreateActivity.this);
         mNext.setOnClickListener(CreateActivity.this);
+
+        mPrev.setVisibility(TextView.GONE);
 
         mFragmentManager = getSupportFragmentManager();
         mViewPager.setOffscreenPageLimit(3);
@@ -69,9 +77,12 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
 
     @Override
     public void onLocationSet(String address, LatLng latLng) {
+        Log.d(TAG, "onLocationSet: " + address);
         mCoWork.setLocationName(address);
         mCoWork.setLocationLat(String.valueOf(latLng.latitude));
         mCoWork.setLocationLng(String.valueOf(latLng.longitude));
+
+        isLocationSet = true;
     }
 
     @Override
@@ -137,39 +148,44 @@ public class CreateActivity extends FragmentActivity implements View.OnClickList
                 if(mTracker > 0){
                     mViewPager.setCurrentItem(--mTracker);
                 }
-                if(mTracker == 0){
-                    mPrev.setEnabled(false);
-                }
-
                 break;
 
             case R.id.textViewNext:
-                ++mTracker;
-                if(mTracker > 0 && mTracker < 3){
-                    mViewPager.setCurrentItem(mTracker);
+                if(mTracker == 0 && isLocationSet == false) {
+                    Toast.makeText(CreateActivity.this, "Please select a location...", Toast.LENGTH_LONG).show();
                 }
-                if(mTracker > 0){
-                    mPrev.setEnabled(true);
-                }
+                else {
+                    ++mTracker;
+                    if (mTracker > 0 && mTracker < 3) {
+                        mViewPager.setCurrentItem(mTracker);
+                    }
 
-                if(mTracker == 3){
-                    HelperClass helperClass = new HelperClass(getApplicationContext());
-                    ProgressDialog pd = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
-                    if(helperClass.saveCoworkToDatabase(mCoWork) == 1){
-                        if(pd != null){
-                            pd.cancel();
+                    if (mTracker == 3) {
+                        HelperClass helperClass = new HelperClass(getApplicationContext());
+                        ProgressDialog pd = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
+                        if (helperClass.saveCoworkToDatabase(mCoWork) == 1) {
+                            if (pd != null) {
+                                pd.cancel();
+                            }
+                            finish();
                         }
-                        finish();
                     }
                 }
-
                 break;
         }
-        if(mTracker >= 2){
-            mNext.setText("Done");
-        }
-        else{
+
+        if(mTracker == 0) {
+            getSupportActionBar().setTitle(R.string.select_location_fragment);
+            mPrev.setVisibility(TextView.GONE);
             mNext.setText("Next");
+        } else if(mTracker == 1) {
+            getSupportActionBar().setTitle(R.string.details_fragment);
+            mPrev.setVisibility(TextView.VISIBLE);
+            mNext.setText("Next");
+        } else if(mTracker == 2) {
+            getSupportActionBar().setTitle(R.string.share_fragment);
+            mPrev.setVisibility(TextView.VISIBLE);
+            mNext.setText("Done");
         }
     }
 
