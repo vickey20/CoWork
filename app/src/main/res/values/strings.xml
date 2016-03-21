@@ -17,6 +17,11 @@
         completions."
     </string>
 
+    <!-- Strings related to action bar titles -->
+    <string name="select_location_fragment">Select a location</string>
+    <string name="details_fragment">Fill in details</string>
+    <string name="share_fragment">Share</string>
+
     <!-- Login shared preference file name -->
     <string name="login_shared_pref">LoginSharedPref</string>
     <string name="create_cowork_shared_pref">CreateCoworkSharedPref</string>
@@ -45,9 +50,6 @@
     <string name="label_three">Three</string>
     <string name="label_four">Four</string>
     <string name="label_five">Five</string>
-    <string name="label_time">Choose a time</string>
-    <string name="label_date">Choose a date</string>
-    <string name="label_time_instant">Time</string>
 
     <!-- Strings related to SelectLocationFragment -->
     <string name="toast_drop_pin_message">Press and hold on map to drop pin</string>
