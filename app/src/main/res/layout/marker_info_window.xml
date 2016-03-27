@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:background="@color/white">
+
+    <TextView
+        android:id="@+id/textViewTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="title"
+        android:textStyle="bold"
+        android:textSize="16dp"
+        android:textColor="@color/black"
+        android:layout_gravity="center_horizontal"/>
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        style="@style/RatingBarSmall"
+        android:layout_margin="5dp"
+        android:layout_gravity="center_horizontal"
+        android:stepSize=".01"
+        android:isIndicator="true"/>
+
+    <TextView
+        android:id="@+id/textViewAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="snippet"
+        android:textSize="14dp"
+        android:layout_gravity="left"
+        android:layout_margin="5dp"/>
+
+    <TextView
+        android:id="@+id/textViewPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="snippet"
+        android:textSize="14dp"
+        android:layout_gravity="left"
+        android:layout_margin="5dp"/>
+
+    <TextView
+        android:id="@+id/textViewWebsite"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        android:text="snippet"
+        android:textSize="14dp"
+        android:layout_gravity="left"
+        android:layout_margin="5dp"/>
+
+</LinearLayout>

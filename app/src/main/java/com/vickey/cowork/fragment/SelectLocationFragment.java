@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ScaleDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -20,8 +22,11 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AutoCompleteTextView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -47,6 +52,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.vickey.cowork.PlaceInfo;
 import com.vickey.cowork.adapter.PlaceAutocompleteAdapter;
 import com.vickey.cowork.R;
 import com.vickey.cowork.utilities.ConnectionDetector;
@@ -72,8 +78,8 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     private LocationRequest mLocationRequest;
     Geocoder mCoder;
 
-    private Marker mMarker;
     private boolean mIsStartup = true;
+    private boolean mIsLocationSelectedByUser = false;
 
     private Vibrator mVibrator;
 
@@ -89,7 +95,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mContext = getActivity().getApplicationContext();
+        mContext = getActivity().getBaseContext();
         mCoder = new Geocoder(mContext);
         mVibrator = (Vibrator) getActivity().getSystemService(mContext.VIBRATOR_SERVICE);
     }
@@ -100,7 +106,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         View v = inflater.inflate(R.layout.fragment_select_location, container, false);
 
         mAutoSearch = (AutoCompleteTextView) v.findViewById(R.id.textViewSearch);
-
+        mAutoSearch.setOnItemClickListener(mAutocompleteClickListener);
         return v;
     }
 
@@ -165,6 +171,9 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
             Toast.makeText(mContext, "Clicked: " + primaryText,
                     Toast.LENGTH_SHORT).show();
             Log.i(TAG, "Called getPlaceById to get Place details for " + placeId);
+
+            InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
         }
     };
 
@@ -183,31 +192,52 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                 return;
             }
             // Get the Place object from the buffer.
-            final Place place = places.get(0);
+            Place place = places.get(0);
+
+            String snippet = formatPlaceDetails(getResources(),
+                    place.getAddress(), place.getPhoneNumber(),
+                    place.getWebsiteUri()).toString();
 
             // Format details of the place for display and show it in a TextView.
-            Log.d(TAG, "mUpdatePlaceDetailsCallback: " + formatPlaceDetails(getResources(), place.getName(),
-                    place.getId(), place.getAddress(), place.getPhoneNumber(),
-                    place.getWebsiteUri()));
+            Log.d(TAG, "mUpdatePlaceDetailsCallback: " + place.getName() + "\n" + "Rating: " + place.getRating() + "\n "
+                    + snippet);
 
+            PlaceInfo placeInfo = new PlaceInfo();
 
-            Log.i(TAG, "Place details received: " + place.getName());
+            placeInfo.setLatLng(place.getLatLng());
+            placeInfo.setId(place.getId());
+            placeInfo.setName(place.getName().toString());
+            placeInfo.setAddress(place.getAddress().toString());
+            placeInfo.setPhone(place.getPhoneNumber().toString());
+            placeInfo.setWebsite(place.getWebsiteUri());
+            placeInfo.setRating(place.getRating());
 
-            mMap.clear();
-            mMap.addMarker(new MarkerOptions().position(place.getLatLng()).title(place.getName().toString())).setDraggable(true);
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(place.getLatLng(), 16));
+            mListener.onLocationSet(placeInfo);
+
+            mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(mContext, placeInfo));
+
+            showMarker(placeInfo);
 
             places.release();
+
+            mIsLocationSelectedByUser = true;
         }
     };
 
-    private Spanned formatPlaceDetails(Resources res, CharSequence name, String id,
-                                              CharSequence address, CharSequence phoneNumber, Uri websiteUri) {
-        Log.d(TAG, res.getString(R.string.place_details, name, id, address, phoneNumber,
+    private Spanned formatPlaceDetails(Resources res, CharSequence address, CharSequence phoneNumber, Uri websiteUri) {
+        Log.d(TAG, res.getString(R.string.place_details, address, phoneNumber,
                 websiteUri));
-        return Html.fromHtml(res.getString(R.string.place_details, name, id, address, phoneNumber,
+        return Html.fromHtml(res.getString(R.string.place_details, address, phoneNumber,
                 websiteUri));
+    }
 
+    private void showMarker(PlaceInfo placeInfo) {
+        mMap.clear();
+        MarkerOptions markerOptions = new MarkerOptions().position(placeInfo.getLatLng());
+        Marker marker = mMap.addMarker(markerOptions);
+        marker.setDraggable(true);
+        marker.showInfoWindow();
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(placeInfo.getLatLng(), 16));
     }
 
     @Override
@@ -312,6 +342,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                     }
                     mMap.clear();
                     mMap.addMarker(new MarkerOptions().position(latLng).title(name)).setDraggable(true);
+
                     mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
                 }
                 catch (Exception e){
@@ -398,15 +429,17 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                     if (mVibrator != null) {
                         mVibrator.vibrate(50);
                     }
+                    PlaceInfo placeInfo = new PlaceInfo();
+                    placeInfo.setLatLng(latLng);
+                    placeInfo.setName("");
+                    placeInfo.setAddress(address);
+                    mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(mContext, placeInfo));
 
-                    mMap.clear();
-                    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title(address);
-                    Marker marker = mMap.addMarker(markerOptions);
-                    marker.setDraggable(true);
-                    marker.showInfoWindow();
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                    showMarker(placeInfo);
 
-                    mListener.onLocationSet(address, latLng);
+                    mListener.onLocationSet(placeInfo);
+
+                    mIsLocationSelectedByUser = true;
 
                 } else {
                     Toast.makeText(getActivity(), "Could not connect to internet", Toast.LENGTH_LONG).show();
@@ -479,15 +512,27 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
 
     private void handleNewLocation(Location location, boolean moveCamera) {
         Log.d(TAG, "handleNewLocation: " + location.toString());
-        LatLng position = new LatLng(location.getLatitude(),location.getLongitude());
+        LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.setMyLocationEnabled(true);
         //mMap.addMarker(new MarkerOptions().position(position).title("Your location")).setDraggable();
-        if(moveCamera) {
+        if (moveCamera) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
         }
         String address = getAddressFromLocation(position);
-        mListener.onLocationSet(address, position);
+
+        PlaceInfo placeInfo = new PlaceInfo();
+        placeInfo.setName("");
+        placeInfo.setAddress(address);
+        placeInfo.setLatLng(position);
+
+        /*
+         * Set this location only if user has not manually selected any location.
+         * To avoid overwriting the user selected location when a location update is received.
+         */
+        if (mIsLocationSelectedByUser == false) {
+            mListener.onLocationSet(placeInfo);
+        }
     }
 
     @Override
@@ -520,7 +565,7 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     }
 
     public interface SelectLocationListener {
-        public void onLocationSet(String address, LatLng latLng);
+        void onLocationSet(PlaceInfo placeInfo);
     }
 
     class BackgroundTask extends AsyncTask<LatLng, Void, String>{
@@ -556,4 +601,63 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
         }
     }*/
 
+    private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        Context context;
+        PlaceInfo placeInfo;
+
+        public CustomInfoWindowAdapter(Context context, PlaceInfo placeInfo) {
+            this.context = context;
+            this.placeInfo = placeInfo;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+
+            return null;
+        }
+
+        @Override
+        public View getInfoWindow(final Marker marker) {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.marker_info_window, null);
+
+            TextView title = (TextView) view.findViewById(R.id.textViewTitle);
+            TextView address = (TextView) view.findViewById(R.id.textViewAddress);
+            TextView phone = (TextView) view.findViewById(R.id.textViewPhone);
+            TextView website = (TextView) view.findViewById(R.id.textViewWebsite);
+            RatingBar ratingBar = (RatingBar) view.findViewById(R.id.ratingBar);
+
+            if (placeInfo.getName() != null && placeInfo.getName().equals("") == false) {
+                title.setText(placeInfo.getName());
+            } else {
+                title.setVisibility(TextView.GONE);
+            }
+
+            if (placeInfo.getAddress() != null && placeInfo.getAddress().equals("") == false) {
+                address.setText("Address: " + placeInfo.getAddress());
+            } else {
+                address.setVisibility(TextView.GONE);
+            }
+
+            if (placeInfo.getPhone() != null && placeInfo.getPhone().equals("") == false) {
+                phone.setText("Phone: " + placeInfo.getPhone());
+            } else {
+                phone.setVisibility(TextView.GONE);
+            }
+
+            if (placeInfo.getWebsite() != null) {
+                website.setText("Website: " + placeInfo.getWebsite());
+            } else {
+                website.setVisibility(TextView.GONE);
+            }
+
+            if (placeInfo.getRating() != 0.0f) {
+                ratingBar.setRating(placeInfo.getRating() * 10);
+            } else {
+                ratingBar.setVisibility(RatingBar.GONE);
+            }
+
+            return view;
+        }
+    }
 }
