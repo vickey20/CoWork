@@ -5,8 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.res.Resources;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ScaleDrawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -131,9 +129,6 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                 .setFastestInterval(1 * 1000); // 1 second, in milliseconds
 
         mGoogleApiClient.connect();
-
-        mAutoCompleteAdapter = new PlaceAutocompleteAdapter(mContext, mGoogleApiClient, mBounds, null);
-        mAutoSearch.setAdapter(mAutoCompleteAdapter);
     }
 
     /**
@@ -232,12 +227,12 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     }
 
     private void showMarker(PlaceInfo placeInfo) {
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(placeInfo.getLatLng(), 16));
         mMap.clear();
         MarkerOptions markerOptions = new MarkerOptions().position(placeInfo.getLatLng());
         Marker marker = mMap.addMarker(markerOptions);
         marker.setDraggable(true);
         marker.showInfoWindow();
-        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(placeInfo.getLatLng(), 16));
     }
 
     @Override
@@ -313,7 +308,9 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                     case Activity.RESULT_OK:
                         // All required changes were successfully made
                         Log.d(TAG, "Location turned on.");
-                        mGoogleApiClient.connect();
+                        if(mGoogleApiClient != null && mGoogleApiClient.isConnected() == false) {
+                            mGoogleApiClient.connect();
+                        }
                         break;
                     case Activity.RESULT_CANCELED:
                         // The user was asked to change settings, but chose not to
@@ -361,6 +358,14 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     public void onPause() {
         super.onPause();
 
+        Log.d(TAG, "onPause");
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+
+        Log.d(TAG, "onDestroy");
         if (mGoogleApiClient.isConnected()) {
             LocationServices.FusedLocationApi.removeLocationUpdates(mGoogleApiClient, this);
             mGoogleApiClient.disconnect();
@@ -498,10 +503,12 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
     @Override
     public void onConnected(Bundle bundle) {
 
-        Log.d(TAG, "onConnected");
+        Log.d(TAG, "onConnected: " + mGoogleApiClient.isConnected());
+
+        mAutoCompleteAdapter = new PlaceAutocompleteAdapter(mContext, mGoogleApiClient, mBounds, null);
+        mAutoSearch.setAdapter(mAutoCompleteAdapter);
 
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-
         if (location == null) {
             LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
         }
