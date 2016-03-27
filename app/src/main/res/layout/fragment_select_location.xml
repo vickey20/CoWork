@@ -27,6 +27,7 @@
         android:id="@+id/textViewSearch"
         android:layout_gravity="center_horizontal|top"
         android:imeOptions="actionSearch"
+        android:selectAllOnFocus="true"
         />
 
     <EditText

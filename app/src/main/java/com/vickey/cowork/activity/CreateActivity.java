@@ -13,6 +13,7 @@ import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 import com.vickey.cowork.CoWork;
+import com.vickey.cowork.PlaceInfo;
 import com.vickey.cowork.fragment.DetailsFragment;
 import com.vickey.cowork.R;
 import com.vickey.cowork.fragment.SelectLocationFragment;
@@ -76,11 +77,15 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
-    public void onLocationSet(String address, LatLng latLng) {
-        Log.d(TAG, "onLocationSet: " + address);
-        mCoWork.setLocationName(address);
-        mCoWork.setLocationLat(String.valueOf(latLng.latitude));
-        mCoWork.setLocationLng(String.valueOf(latLng.longitude));
+    public void onLocationSet(PlaceInfo placeInfo) {
+        Log.d(TAG, "onLocationSet: " + placeInfo.getAddress());
+        if (placeInfo.getName() != null && placeInfo.getName().equals("") == false) {
+            mCoWork.setLocationName(placeInfo.getName() + ". " + placeInfo.getAddress());
+        } else {
+            mCoWork.setLocationName("Address: " + placeInfo.getAddress());
+        }
+        mCoWork.setLocationLat(String.valueOf(placeInfo.getLatLng().latitude));
+        mCoWork.setLocationLng(String.valueOf(placeInfo.getLatLng().longitude));
 
         isLocationSet = true;
     }
