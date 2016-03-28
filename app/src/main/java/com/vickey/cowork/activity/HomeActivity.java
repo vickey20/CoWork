@@ -18,8 +18,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
+import android.widget.TextView;
 
 import com.vickey.cowork.adapter.CardViewAdapter;
 import com.vickey.cowork.CoWork;
@@ -47,9 +47,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     RecyclerView.LayoutManager mLayoutManager;
     RecyclerView.Adapter mAdapter;
     ScrollView mScrollView;
-    LinearLayout mLinearRecycler;
-    Button mButtonCreate;
-    Button mButtonDiscover;
+    TextView mTextViewCreate, mTextViewDiscover;
     CardView mCardViewStartup;
 
     @Override
@@ -80,11 +78,11 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mRecyclerView = (RecyclerView) findViewById(R.id.recyclerView);
         mScrollView = (ScrollView) findViewById(R.id.scrollViewCoworkingSpace);
 
-        mButtonCreate = (Button) findViewById(R.id.buttonCreateCowork);
-        mButtonDiscover = (Button) findViewById(R.id.buttonDiscoverCowork);
+        mTextViewCreate = (TextView) findViewById(R.id.textViewCreateCowork);
+        mTextViewDiscover = (TextView) findViewById(R.id.textViewDiscoverCowork);
 
-        mButtonCreate.setOnClickListener(HomeActivity.this);
-        mButtonDiscover.setOnClickListener(HomeActivity.this);
+        mTextViewCreate.setOnClickListener(HomeActivity.this);
+        mTextViewDiscover.setOnClickListener(HomeActivity.this);
 
         /**
          * If user is associated with any coworking space,
@@ -149,7 +147,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         Intent intent;
         int p = mDefaultSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
         switch (v.getId()){
-            case R.id.buttonCreateCowork:
+            case R.id.textViewCreateCowork:
                 if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && p == 0){
                     checkLocationPermission();
                 } else {
@@ -158,7 +156,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
 
-            case R.id.buttonDiscoverCowork:
+            case R.id.textViewDiscoverCowork:
                 if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && p == 0){
                     checkLocationPermission();
                 } else {
