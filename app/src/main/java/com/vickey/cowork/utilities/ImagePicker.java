@@ -159,7 +159,7 @@ public class ImagePicker {
     /**
      * Resize to avoid using too much memory loading big images (e.g.: 2560*1920)
      **/
-    private static Bitmap getImageResized(Context context, Uri selectedImage) {
+    public static Bitmap getImageResized(Context context, Uri selectedImage) {
         Bitmap bm = null;
         int[] sampleSizes = new int[]{10, 8, 6, 4, 2};
         int i = 0;

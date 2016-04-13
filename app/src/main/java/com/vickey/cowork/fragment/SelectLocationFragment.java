@@ -434,15 +434,13 @@ public class SelectLocationFragment extends Fragment implements GoogleApiClient.
                     if (mVibrator != null) {
                         mVibrator.vibrate(50);
                     }
-                    PlaceInfo placeInfo = new PlaceInfo();
+                    final PlaceInfo placeInfo = new PlaceInfo();
                     placeInfo.setLatLng(latLng);
                     placeInfo.setName("");
                     placeInfo.setAddress(address);
                     mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(mContext, placeInfo));
 
                     showMarker(placeInfo);
-
-                    mListener.onLocationSet(placeInfo);
 
                     mIsLocationSelectedByUser = true;
 

@@ -118,4 +118,9 @@ public class Constants {
         public final static int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 201;
         public final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
     }
+
+    public class TimeAndDate {
+        public static final String TIME_FORMAT = "hh:mm a";
+        public static final String DATE_FORMAT = "EEE, MMM dd";
+    }
 }

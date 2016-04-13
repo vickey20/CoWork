@@ -17,7 +17,6 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -53,8 +52,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
 
+        setContentView(R.layout.activity_home);
         //Get userID from preferences
         mLoginSharedPref = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
         USER_ID = mLoginSharedPref.getString(Constants.PreferenceKeys.KEY_USER_ID, "");
@@ -94,12 +93,15 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
+        //HelperClass.setCoworkAlarm(getApplicationContext(), -1, 10 * 1000);
+
+        HelperClass.getTimeInMillis("Sat, Apr 9 22:10 PM", Constants.TimeAndDate.DATE_FORMAT + " " + Constants.TimeAndDate.TIME_FORMAT);
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
         HelperClass helperClass = new HelperClass(getApplicationContext());
         ArrayList<CoWork> coWorks = helperClass.getUserCoworkList();
 

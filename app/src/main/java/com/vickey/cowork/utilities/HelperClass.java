@@ -1,7 +1,11 @@
 package com.vickey.cowork.utilities;
 
+import android.app.AlarmManager;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -9,6 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -18,8 +24,11 @@ import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
 
 import java.io.ByteArrayOutputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by vikram on 11/19/2015.
@@ -299,5 +308,49 @@ public class HelperClass {
         ArrayList<CoWork> coworkList = new ArrayList<>();
 
         return coworkList;
+    }
+
+    public static long getTimeInMillis(String timeDateString, String dateFormat) {
+        long timeInMilliseconds = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        try {
+            Date mDate = sdf.parse(timeDateString);
+            timeInMilliseconds = mDate.getTime();
+            System.out.println("Date in milli :: " + timeInMilliseconds);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return timeInMilliseconds;
+    }
+
+    public static void setCoworkAlarm(Context context, int coworkId, long millisFromNow) {
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, AlarmReceiver.class);
+
+        intent.putExtra(AlarmReceiver.COWORK_ID, coworkId);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        alarmManager.set(AlarmManager.RTC_WAKEUP, millisFromNow, pendingIntent);
+    }
+
+    public static void showNotification(Context context, String title, String description, int icon, int notificationId, Class activity) {
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        builder.setSmallIcon(icon);
+        builder.setContentTitle(title);
+        builder.setContentText(description);
+        builder.setAutoCancel(true);
+
+        Intent intent = new Intent(context, activity);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(activity);
+
+        stackBuilder.addNextIntent(intent);
+
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(notificationId, builder.build());
+
     }
 }

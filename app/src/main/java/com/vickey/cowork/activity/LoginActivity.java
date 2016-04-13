@@ -109,10 +109,10 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         //get shared preference reference.
         mSharedPref = getSharedPreferences(getString(R.string.login_shared_pref), Context.MODE_PRIVATE);
 
-        //If already logged in, launch HomeActivity.
+        /*//If already logged in, launch HomeActivity.
         if(mSharedPref.getInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_FALSE) == Constants.Login.LOGIN_TRUE){
             startHomeActivity();
-        }
+        }*/
 
         setContentView(R.layout.activity_login);
 

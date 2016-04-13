@@ -283,9 +283,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     }
 
     private ArrayList<CoWork> getNearbyCoworkList(){
-        ArrayList<CoWork> coworkList = new ArrayList<>();
-        coworkList = mHelper.getUserCoworkList();
-        return coworkList;
+        return mHelper.getUserCoworkList();
     }
 
     @Override
@@ -317,7 +315,6 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         }
 
         ArrayList<CoWork> coworkList = getNearbyCoworkList();
-
     }
 
     private void setMarkers(ArrayList<CoWork> coworkList){
