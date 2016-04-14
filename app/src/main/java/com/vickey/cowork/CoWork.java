@@ -1,9 +1,11 @@
 package com.vickey.cowork;
 
+import java.io.Serializable;
+
 /**
  * Created by vikram on 11/20/2015.
  */
-public class CoWork {
+public class CoWork implements Serializable {
 
     int coworkID;
     String creatorID;

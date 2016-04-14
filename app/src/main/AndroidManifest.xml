@@ -65,8 +65,10 @@
             android:screenOrientation="portrait"></activity>
         <activity android:name=".activity.InstantCreateActivity"
             android:label="Instant CoWork">
-
         </activity>
+
+        <service android:name=".service.CoworkIntentService"
+            android:exported="false" />
     </application>
 
 </manifest>
