@@ -12,8 +12,8 @@ public class CoWork implements Serializable {
     String attendeesID;
     int numAttendees;
     String locationName;
-    String locationLat;
-    String locationLng;
+    Double locationLat;
+    Double locationLng;
     String time;
     String date;
     int activityType;
@@ -26,8 +26,8 @@ public class CoWork implements Serializable {
         creatorID = "";
         attendeesID = "";
         locationName = "";
-        locationLat = "";
-        locationLng = "";
+        locationLat = 0.0;
+        locationLng = 0.0;
         numAttendees = 0;
         time = "";
         date = "";
@@ -116,19 +116,19 @@ public class CoWork implements Serializable {
         this.locationName = locationName;
     }
 
-    public String getLocationLat() {
+    public Double getLocationLat() {
         return locationLat;
     }
 
-    public void setLocationLat(String locationLat) {
+    public void setLocationLat(Double locationLat) {
         this.locationLat = locationLat;
     }
 
-    public String getLocationLng() {
+    public Double getLocationLng() {
         return locationLng;
     }
 
-    public void setLocationLng(String locationLng) {
+    public void setLocationLng(Double locationLng) {
         this.locationLng = locationLng;
     }
 
@@ -139,4 +139,5 @@ public class CoWork implements Serializable {
     public void setTime(String time) {
         this.time = time;
     }
+
 }

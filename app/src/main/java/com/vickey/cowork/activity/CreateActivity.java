@@ -2,6 +2,7 @@ package com.vickey.cowork.activity;
 
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -18,6 +19,8 @@ import com.vickey.cowork.fragment.DetailsFragment;
 import com.vickey.cowork.R;
 import com.vickey.cowork.fragment.SelectLocationFragment;
 import com.vickey.cowork.fragment.ShareFragment;
+import com.vickey.cowork.receiver.IntentServiceReceiver;
+import com.vickey.cowork.service.CoworkIntentService;
 import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.CustomViewPager;
 import com.vickey.cowork.utilities.HelperClass;
@@ -25,7 +28,8 @@ import com.vickey.cowork.utilities.HelperClass;
 public class CreateActivity extends AppCompatActivity implements View.OnClickListener,
         SelectLocationFragment.SelectLocationListener,
         DetailsFragment.DetailsListener,
-        ShareFragment.ShareListener {
+        ShareFragment.ShareListener,
+        IntentServiceReceiver.Receiver {
 
     private final String TAG = "CreateActivity";
 
@@ -42,6 +46,8 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     public static CoWork mCoWork;
 
     private boolean isLocationSet;
+
+    ProgressDialog mProgressDialog;
 
     @Override
     protected void onResume() {
@@ -74,6 +80,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
         mCoWork = new CoWork();
 
+
         mCoWork.setCreatorID(HomeActivity.USER_ID);
     }
 
@@ -85,8 +92,8 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         } else {
             mCoWork.setLocationName("Address: " + placeInfo.getAddress());
         }
-        mCoWork.setLocationLat(String.valueOf(placeInfo.getLatLng().latitude));
-        mCoWork.setLocationLng(String.valueOf(placeInfo.getLatLng().longitude));
+        mCoWork.setLocationLat(placeInfo.getLatLng().latitude);
+        mCoWork.setLocationLng(placeInfo.getLatLng().longitude);
 
         isLocationSet = true;
     }
@@ -167,14 +174,8 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                     }
 
                     if (mTracker == 3) {
-                        HelperClass helperClass = new HelperClass(getApplicationContext());
-                        ProgressDialog pd = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
-                        if (helperClass.saveCoworkToDatabase(mCoWork) == 1) {
-                            if (pd != null) {
-                                pd.cancel();
-                            }
-                            finish();
-                        }
+                        mProgressDialog = ProgressDialog.show(CreateActivity.this, "CoWork", "Saving...", false, false);
+                        sendCoworkToServer(mCoWork);
                     }
                 }
                 break;
@@ -204,6 +205,60 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
             fragment.onActivityResult(requestCode, resultCode, data);
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void sendCoworkToServer(CoWork coWork) {
+        /* Starting Download Service */
+        IntentServiceReceiver receiver = new IntentServiceReceiver(new Handler());
+        receiver.setReceiver(CreateActivity.this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
+
+            /* Send optional extras to Download IntentService */
+        intent.putExtra(CoworkIntentService.COWORK, coWork);
+        intent.putExtra(CoworkIntentService.RECEIVER, receiver);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.COWORK_REQUEST);
+        intent.putExtra(CoworkIntentService.REQUEST_TYPE, Constants.Request.SEND_COWORK_TO_SERVER);
+
+        startService(intent);
+    }
+
+    private void saveCoworkToDatabase(CoWork coWork) {
+        HelperClass helperClass = new HelperClass(getApplicationContext());
+        if(helperClass.saveCoworkToDatabase(mCoWork) != 1) {
+            Log.d(TAG, "Error saving locally");
+        }
+    }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
+
+        switch (resultCode) {
+            case CoworkIntentService.STATUS_RUNNING:
+
+                break;
+
+            case CoworkIntentService.STATUS_FINISHED:
+                Toast.makeText(CreateActivity.this, "Saved successfully!", Toast.LENGTH_LONG).show();
+                if (resultData != null) {
+                    int requestType = resultData.getInt(CoworkIntentService.REQUEST_TYPE);
+                    if (requestType == Constants.Request.SEND_COWORK_TO_SERVER) {
+                        int coworkId = resultData.getInt(CoworkIntentService.RESULT, -1);
+                        mCoWork.setCoworkID(coworkId);
+                        saveCoworkToDatabase(mCoWork);
+                    }
+                }
+                finish();
+                break;
+
+            case CoworkIntentService.STATUS_ERROR:
+                Toast.makeText(CreateActivity.this, "Error saving CoWork. Please try again...", Toast.LENGTH_LONG).show();
+                break;
+        }
+
+        if (mProgressDialog != null) {
+            mProgressDialog.cancel();
         }
     }
 }

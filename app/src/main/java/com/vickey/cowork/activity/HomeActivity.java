@@ -31,7 +31,7 @@ import com.vickey.cowork.utilities.HelperClass;
 
 import java.util.ArrayList;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener, IntentServiceReceiver.Receiver {
+public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
 
     private final String TAG = "HomeActivity";
 
@@ -51,8 +51,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ScrollView mScrollView;
     TextView mTextViewCreate, mTextViewDiscover;
     CardView mCardViewStartup;
-
-    IntentServiceReceiver mReceiver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -112,18 +110,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             mRecyclerView.setAdapter(mAdapter);
             mCardViewStartup.setVisibility(CardView.GONE);
             mRecyclerView.setVisibility(RecyclerView.VISIBLE);
-
-            /* Starting Download Service */
-            mReceiver = new IntentServiceReceiver(new Handler());
-            mReceiver.setReceiver(HomeActivity.this);
-            Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
-
-            /* Send optional extras to Download IntentService */
-            intent.putExtra(CoworkIntentService.COWORK, coWorks.get(0));
-            intent.putExtra("receiver", mReceiver);
-            intent.putExtra("requestId", 101);
-
-            startService(intent);
         }
         else{
             mRecyclerView.setVisibility(RecyclerView.GONE);
@@ -243,25 +229,6 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
             // other 'case' lines to check for other
             // permissions this app might request
-        }
-    }
-
-    @Override
-    public void onReceiveResult(int resultCode, Bundle resultData) {
-        Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
-
-        switch (resultCode) {
-            case CoworkIntentService.STATUS_RUNNING:
-
-                break;
-
-            case CoworkIntentService.STATUS_FINISHED:
-                // update UI
-                break;
-
-            case CoworkIntentService.STATUS_ERROR:
-
-                break;
         }
     }
 }

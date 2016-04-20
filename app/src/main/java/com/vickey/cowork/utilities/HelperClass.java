@@ -89,8 +89,8 @@ public class HelperClass {
                         coWork.setAttendeesID(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_ATTENDEES_ID)));
                         coWork.setNumAttendees(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_NUM_ATTENDEES)));
                         coWork.setLocationName(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_lOCATION_NAME)));
-                        coWork.setLocationLat(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LATITUDE)));
-                        coWork.setLocationLng(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
+                        coWork.setLocationLat(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LATITUDE)));
+                        coWork.setLocationLng(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
                         coWork.setTime(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_TIME)));
                         coWork.setDate(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DATE)));
                         coWork.setActivityType(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_ACTIVITY_TYPE)));
@@ -120,7 +120,7 @@ public class HelperClass {
     }
 
     public int saveCoworkToDatabase(CoWork coWork){
-
+        Log.d(TAG, "saveCoworkToDatabase");
         try {
 
             ContentValues values = new ContentValues();
@@ -145,13 +145,12 @@ public class HelperClass {
 
             mDatabase.close();
 
-
+            return 1;
         }
         catch (Exception e){
             e.printStackTrace();
             return 0;
         }
-        return 1;
     }
 
     public int saveUserProfileToDB(UserProfile userProfile){
@@ -204,7 +203,7 @@ public class HelperClass {
                 {
                     do
                     {
-                        userProfile.setUserId(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_USER_ID)));
+                        userProfile.setUserId(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_USER_ID)));
                         userProfile.setName(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_NAME)));
                         userProfile.setEmail(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_EMAIL)));
                         userProfile.setProfession(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_PROFESSION)));

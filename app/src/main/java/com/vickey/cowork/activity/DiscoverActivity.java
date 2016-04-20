@@ -11,6 +11,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -37,9 +38,13 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.vickey.cowork.CoWork;
+import com.vickey.cowork.LocationClass;
 import com.vickey.cowork.R;
+import com.vickey.cowork.receiver.IntentServiceReceiver;
+import com.vickey.cowork.service.CoworkIntentService;
 import com.vickey.cowork.utilities.ConnectionDetector;
 import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
@@ -47,7 +52,7 @@ import com.vickey.cowork.utilities.HelperClass;
 import java.util.ArrayList;
 
 public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, IntentServiceReceiver.Receiver {
 
     public static final String TAG = DiscoverActivity.class.getSimpleName();
 
@@ -57,6 +62,8 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     private boolean mIsStartup = true;
     private ArrayList<Integer> mSelectedFilters;
+
+    private Location mLocation;
 
     ProgressDialog mLoadingDialog;
 
@@ -282,12 +289,6 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         mMap.setOnMapLongClickListener(this);
     }
 
-    private ArrayList<CoWork> getNearbyCoworkList(){
-        ArrayList<CoWork> coworkList = new ArrayList<>();
-        coworkList = mHelper.getUserCoworkList();
-        return coworkList;
-    }
-
     @Override
     public void onMapClick(LatLng latLng) {
 
@@ -308,6 +309,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     private void handleNewLocation(Location location, boolean moveCamera) {
         Log.d(TAG, "handleNewLocation: " + location.toString());
+        mLocation = location;
         LatLng position = new LatLng(location.getLatitude(),location.getLongitude());
         mMap.setMyLocationEnabled(true);
         //mMap.addMarker(new MarkerOptions().position(position).title("Your location")).setDraggable();
@@ -316,12 +318,26 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
         }
 
-        ArrayList<CoWork> coworkList = getNearbyCoworkList();
+        requestNearbyCoworkList(location);
 
     }
 
-    private void setMarkers(ArrayList<CoWork> coworkList){
+    private void setMarkers(ArrayList<CoWork> coworkList, Location location){
+        LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
+        mMap.clear();
 
+        for(CoWork coWork: coworkList) {
+            Log.d(TAG, "marker for cowork id: " + coWork.getCoworkID());
+            latLng = new LatLng(coWork.getLocationLat(), coWork.getLocationLng());
+            MarkerOptions markerOptions = new MarkerOptions().position(latLng);
+            markerOptions.title(String.valueOf("CoWorkID: " + coWork.getCoworkID()));
+            markerOptions.snippet("Activity: " + String.valueOf(coWork.getActivityType()));
+            Marker marker = mMap.addMarker(markerOptions);
+            marker.setDraggable(false);
+            marker.setVisible(true);
+            //marker.showInfoWindow();
+        }
     }
 
     @Override
@@ -421,6 +437,55 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                     });
 
             return builder.create();
+        }
+    }
+
+    private void requestNearbyCoworkList(Location location){
+
+        /* Starting Download Service */
+        IntentServiceReceiver receiver = new IntentServiceReceiver(new Handler());
+        receiver.setReceiver(DiscoverActivity.this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
+
+        LocationClass locationClass = new LocationClass();
+        locationClass.setLat(location.getLatitude());
+        locationClass.setLng(location.getLongitude());
+
+            /* Send optional extras to Download IntentService */
+        intent.putExtra(CoworkIntentService.LOCATION, locationClass);
+        intent.putExtra(CoworkIntentService.RECEIVER, receiver);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.COWORK_REQUEST);
+        intent.putExtra(CoworkIntentService.REQUEST_TYPE, Constants.Request.GET_NEARBY_COWORKS_FROM_SERVER);
+
+        startService(intent);
+    }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
+
+        switch (resultCode) {
+            case CoworkIntentService.STATUS_RUNNING:
+
+                break;
+
+            case CoworkIntentService.STATUS_FINISHED:
+                Toast.makeText(DiscoverActivity.this, "Fetched successfully!", Toast.LENGTH_LONG).show();
+                Log.d(TAG, "Fetched successfully");
+                if (resultData != null) {
+                    int requestType = resultData.getInt(CoworkIntentService.REQUEST_TYPE);
+                    if (requestType == Constants.Request.GET_NEARBY_COWORKS_FROM_SERVER) {
+                        Log.d(TAG, "Got success!");
+                        ArrayList<CoWork> coWorks = (ArrayList<CoWork>) resultData.getSerializable(CoworkIntentService.RESULT);
+                        Log.d(TAG, "cowork: " + coWorks);
+                        setMarkers(coWorks, mLocation);
+                    }
+                }
+                break;
+
+            case CoworkIntentService.STATUS_ERROR:
+                Toast.makeText(DiscoverActivity.this, "Error fetching nearby CoWorks. Please try again...", Toast.LENGTH_LONG).show();
+                break;
         }
     }
 }
