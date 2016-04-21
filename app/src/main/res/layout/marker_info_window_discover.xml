@@ -6,10 +6,9 @@
     android:background="@color/white">
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="10dp">
+        android:layout_width="300dp"
+        android:layout_height="100dp"
+        android:orientation="vertical">
         <TextView
             android:id="@+id/textViewTitle"
             android:layout_width="wrap_content"
@@ -20,45 +19,24 @@
             android:textColor="@color/black"
             android:layout_gravity="center_horizontal"/>
 
-        <RatingBar
-            android:id="@+id/ratingBar"
+        <TextView
+            android:id="@+id/textViewActivity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            style="@style/RatingBarSmall"
-            android:layout_margin="5dp"
-            android:layout_gravity="center_horizontal"
-            android:stepSize=".01"
-            android:isIndicator="true"/>
+            android:textColor="@color/black"
+            android:text="snippet"
+            android:textSize="14dp"
+            android:layout_gravity="left"
+            android:layout_margin="5dp"/>
 
         <TextView
             android:id="@+id/textViewAddress"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="@color/black"
-            android:text="snippet"
+            android:text="address"
             android:textSize="14dp"
             android:layout_gravity="left"
             android:layout_margin="5dp"/>
-
-        <TextView
-            android:id="@+id/textViewPhone"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:text="snippet"
-            android:textSize="14dp"
-            android:layout_gravity="left"
-            android:layout_margin="5dp"/>
-
-        <TextView
-            android:id="@+id/textViewWebsite"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/black"
-            android:text="snippet"
-            android:textSize="14dp"
-            android:layout_gravity="left"
-            android:layout_margin="5dp"/>
-
     </LinearLayout>
 </LinearLayout>
