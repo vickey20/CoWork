@@ -59,6 +59,8 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create);
 
+        HelperClass.deleteCache(getApplicationContext());
+
         mViewPager = (CustomViewPager) findViewById(R.id.viewPager);
         getSupportActionBar().setTitle(R.string.select_location_fragment);
 
@@ -88,7 +90,7 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     public void onLocationSet(PlaceInfo placeInfo) {
         Log.d(TAG, "onLocationSet: " + placeInfo.getAddress());
         if (placeInfo.getName() != null && placeInfo.getName().equals("") == false) {
-            mCoWork.setLocationName(placeInfo.getName() + ". " + placeInfo.getAddress());
+            mCoWork.setLocationName(placeInfo.getName() + "\n" + placeInfo.getAddress());
         } else {
             mCoWork.setLocationName("Address: " + placeInfo.getAddress());
         }

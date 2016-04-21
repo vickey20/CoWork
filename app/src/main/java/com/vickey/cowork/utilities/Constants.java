@@ -129,8 +129,10 @@ public class Constants {
         public final static int GET_ALL_COWORKS_FROM_SERVER = 5;
         public final static int GET_NEARBY_COWORKS_FROM_SERVER = 6;
         public final static int UPDATE_COWORK = 7;
-        public final static int SEND_USER_PROFILE_TO_SERVER = 8;
-        public final static int UPDATE_USER_PROFILE = 9;
-        public final static int GET_USER_PROFILE = 10;
+        public final static int ADD_USER_AS_ATTENDEE = 8;
+        public final static int SEND_USER_PROFILE_TO_SERVER = 9;
+        public final static int UPDATE_USER_PROFILE = 10;
+        public final static int GET_USER_PROFILE = 11;
+        public final static int GET_CORRESPONDING_USER_PROFILE_LIST = 12;
     }
 }

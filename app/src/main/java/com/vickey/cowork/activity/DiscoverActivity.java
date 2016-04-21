@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentSender;
@@ -16,10 +17,15 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.RatingBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -37,12 +43,15 @@ import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.vickey.cowork.CoWork;
+import com.vickey.cowork.CoworkBundle;
 import com.vickey.cowork.LocationClass;
 import com.vickey.cowork.R;
+import com.vickey.cowork.UserProfile;
 import com.vickey.cowork.receiver.IntentServiceReceiver;
 import com.vickey.cowork.service.CoworkIntentService;
 import com.vickey.cowork.utilities.ConnectionDetector;
@@ -50,11 +59,16 @@ import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener, IntentServiceReceiver.Receiver {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, IntentServiceReceiver.Receiver, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
 
     public static final String TAG = DiscoverActivity.class.getSimpleName();
+    public static final Float CAMERA_ZOOM_HIGH = 16f;
+    public static final Float CAMERA_ZOOM_MEDIUM = 12f;
+    public static final Float CAMERA_ZOOM_LOW = 10f;
+
 
     private GoogleMap mMap; // Might be null if Google Play services APK is not available.
     private GoogleApiClient mGoogleApiClient;
@@ -62,12 +76,22 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     private boolean mIsStartup = true;
     private ArrayList<Integer> mSelectedFilters;
+    boolean[] mBooleanArray = {true, true, true, true, true};
 
     private Location mLocation;
 
     ProgressDialog mLoadingDialog;
 
     HelperClass mHelper;
+
+    HashMap<Marker, CoworkBundle> mMarkerCoWorkHashMap;
+    ArrayList<CoWork> mCoWorkArrayList;
+    ArrayList<UserProfile> mUserProfileArrayList;
+    String[] mActivities;
+
+    ArrayList<CoWork> mUserCoworkList;
+
+    Dialog mCoworkDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,6 +112,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         mGoogleApiClient.connect();
 
         mHelper = new HelperClass(getApplicationContext());
+        mActivities =  getApplicationContext().getResources().getStringArray(R.array.array_activities);
     }
 
     @Override
@@ -191,7 +216,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                     }
                     mMap.clear();
                     mMap.addMarker(new MarkerOptions().position(latLng).title(name)).setDraggable(true);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
                 }
                 catch (Exception e){
                     e.printStackTrace();
@@ -278,7 +303,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
                 //mMap.addMarker(new MarkerOptions().position(loc));
                 if (mMap != null && mIsStartup == true) {
-                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 16.0f));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(loc, 12.0f));
                     mIsStartup = false;
                 }
             }
@@ -287,11 +312,10 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         mMap.setMyLocationEnabled(true);
         mMap.setOnMapClickListener(this);
         mMap.setOnMapLongClickListener(this);
-    }
-
-    @Override
-    public void onMapClick(LatLng latLng) {
-
+        mMap.setOnMarkerClickListener(this);
+        mMap.setOnInfoWindowClickListener(this);
+        CameraPosition cameraPosition = mMap.getCameraPosition();
+        Float zoom = cameraPosition.zoom;
     }
 
     @Override
@@ -309,35 +333,81 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     private void handleNewLocation(Location location, boolean moveCamera) {
         Log.d(TAG, "handleNewLocation: " + location.toString());
+
+        showLoadingDialog();
+
         mLocation = location;
         LatLng position = new LatLng(location.getLatitude(),location.getLongitude());
         mMap.setMyLocationEnabled(true);
         //mMap.addMarker(new MarkerOptions().position(position).title("Your location")).setDraggable();
         if(moveCamera) {
             mMap.moveCamera(CameraUpdateFactory.newLatLng(position));
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 15));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(position, 12));
         }
 
         requestNearbyCoworkList(location);
 
     }
 
-    private void setMarkers(ArrayList<CoWork> coworkList, Location location){
+    private void setMarkers(ArrayList<CoWork> coworkList, ArrayList<UserProfile> userProfileArrayList, Location location, Boolean isUsersSynced){
+        HelperClass.deleteCache(getApplicationContext());
         LatLng latLng = new LatLng(location.getLatitude(), location.getLongitude());
         mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 12));
         mMap.clear();
 
+        mMarkerCoWorkHashMap = new HashMap<>();
+
+        int i = 0;
         for(CoWork coWork: coworkList) {
-            Log.d(TAG, "marker for cowork id: " + coWork.getCoworkID());
-            latLng = new LatLng(coWork.getLocationLat(), coWork.getLocationLng());
-            MarkerOptions markerOptions = new MarkerOptions().position(latLng);
-            markerOptions.title(String.valueOf("CoWorkID: " + coWork.getCoworkID()));
-            markerOptions.snippet("Activity: " + String.valueOf(coWork.getActivityType()));
-            Marker marker = mMap.addMarker(markerOptions);
-            marker.setDraggable(false);
-            marker.setVisible(true);
-            //marker.showInfoWindow();
+
+            if (coWork.getCreatorID().equals(HomeActivity.USER_ID) == false) {
+                Log.d(TAG, "marker for cowork id: " + coWork.getCoworkID());
+                latLng = new LatLng(coWork.getLocationLat(), coWork.getLocationLng());
+                MarkerOptions markerOptions = new MarkerOptions().position(latLng);
+                String title = "CoWorkID: " + coWork.getCoworkID();
+                UserProfile userProfile = new UserProfile();
+                if (isUsersSynced == false) {
+                    userProfile = getUserProfileFromUserID(coWork.getCreatorID(), userProfileArrayList);
+                    if (userProfile != null) {
+                        title = title + ". " + userProfile.getName();
+                    }
+                } else {
+                    title = title + userProfileArrayList.get(i).getName();
+                }
+
+                markerOptions.title(title);
+                markerOptions.snippet("Activity: " + String.valueOf(coWork.getActivityType()));
+                Marker marker = mMap.addMarker(markerOptions);
+                marker.setDraggable(false);
+                marker.setVisible(true);
+                //marker.showInfoWindow();
+
+                CoworkBundle coworkBundle = new CoworkBundle();
+                coworkBundle.setCoWork(coWork);
+                if (isUsersSynced == false) {
+                    coworkBundle.setUserProfile(userProfile);
+                } else {
+                    coworkBundle.setUserProfile(userProfileArrayList.get(i));
+                }
+                mMarkerCoWorkHashMap.put(marker, coworkBundle);
+
+                coworkBundle = null;
+                userProfile = null;
+
+                i++;
+            }
         }
+    }
+
+    private UserProfile getUserProfileFromUserID(String userID, ArrayList<UserProfile> userProfileArrayList) {
+
+        for (UserProfile userProfile : userProfileArrayList) {
+            if (userID.equals(userProfile.getUserId())) {
+                return userProfile;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -397,16 +467,117 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
     }
 
+    @Override
+    public void onMapClick(LatLng latLng) {
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        CoworkBundle coworkBundle = mMarkerCoWorkHashMap.get(marker);
+
+        LatLng latLng = new LatLng(coworkBundle.getCoWork().getLocationLat(), coworkBundle.getCoWork().getLocationLng());
+        mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16));
+
+        Log.d(TAG, "Marker CoworkId: " + coworkBundle.getCoWork().getCoworkID());
+
+        mMap.setInfoWindowAdapter(new CustomInfoWindowAdapter(DiscoverActivity.this, coworkBundle.getCoWork(), coworkBundle.getUserProfile()));
+
+        marker.showInfoWindow();
+        return true;
+    }
+
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+        showCoworkDialog(marker);
+    }
+
+    private void showCoworkDialog(Marker marker) {
+
+        final CoworkBundle coworkBundle = mMarkerCoWorkHashMap.get(marker);
+
+        mCoworkDialog = new Dialog(DiscoverActivity.this);
+        mCoworkDialog.setContentView(R.layout.layout_cowork_dialog);
+        mCoworkDialog.setTitle("CoWork");
+
+        // set the custom dialog components - text, image and button
+        TextView location = (TextView) mCoworkDialog.findViewById(R.id.location);
+        location.setText(coworkBundle.getCoWork().getLocationName());
+
+        ImageView image = (ImageView) mCoworkDialog.findViewById(R.id.imageView);
+        image.setImageResource(R.mipmap.ic_launcher);
+
+        TextView nameText = (TextView) mCoworkDialog.findViewById(R.id.name);
+        nameText.setText(coworkBundle.getUserProfile().getName());
+
+        TextView activity = (TextView) mCoworkDialog.findViewById(R.id.activity);
+        activity.setText(mActivities[coworkBundle.getCoWork().getActivityType()]);
+
+        TextView profession = (TextView) mCoworkDialog.findViewById(R.id.profession);
+        profession.setText(coworkBundle.getUserProfile().getProfession());
+
+        TextView description = (TextView) mCoworkDialog.findViewById(R.id.description);
+        description.setText(coworkBundle.getCoWork().getDescription());
+
+        TextView time = (TextView) mCoworkDialog.findViewById(R.id.textViewTime);
+        time.setText(coworkBundle.getCoWork().getTime());
+
+        TextView date = (TextView) mCoworkDialog.findViewById(R.id.textViewDate);
+        date.setText(coworkBundle.getCoWork().getDate());
+
+        Button join = (Button) mCoworkDialog.findViewById(R.id.joinButton);
+
+        // if button is clicked, close the custom dialog
+        join.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(isUserAlreadyAttendee(coworkBundle) == false) {
+                    addUserAsAttendee(coworkBundle.getCoWork().getCoworkID(), HomeActivity.USER_ID);
+                } else {
+                    Toast.makeText(DiscoverActivity.this, "You have already joined this CoWork!", Toast.LENGTH_LONG).show();
+                }
+            }
+        });
+
+        mCoworkDialog.show();
+    }
+
+    private boolean isUserAlreadyAttendee(CoworkBundle coworkBundle) {
+
+        mUserCoworkList = mHelper.getUserCoworkList();
+        Log.d(TAG, "cowork bundle: " + coworkBundle.getCoWork().getAttendeesID());
+        for (int i = 0; i < mUserCoworkList.size(); i++) {
+            Log.d(TAG, "coworkID: " + mUserCoworkList.get(i).getCoworkID());
+            Log.d(TAG, "mUserCoworkList attendees: " + mUserCoworkList.get(i).getAttendeesID());
+            if (coworkBundle.getCoWork().getAttendeesID().contains(mUserCoworkList.get(i).getAttendeesID())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public class FilterDialog extends DialogFragment{
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            mSelectedFilters = new ArrayList();  // Where we track the selected items
+
+            //mSelectedFilters = new ArrayList<>();
+            if(mSelectedFilters == null) {
+                mSelectedFilters = new ArrayList();  // Where we track the selected items
+                mSelectedFilters.add(0, 0);
+                mSelectedFilters.add(1, 1);
+                mSelectedFilters.add(2, 2);
+                mSelectedFilters.add(3, 3);
+                mSelectedFilters.add(4, 4);
+            }
+
             AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             // Set the dialog title
             builder.setTitle(R.string.title_filter_dialog)
                     // Specify the list array, the items to be selected by default (null for none),
                     // and the listener through which to receive callbacks when items are selected
-                    .setMultiChoiceItems(R.array.array_activities, null,
+                    .setMultiChoiceItems(R.array.array_activities, mBooleanArray,
                             new DialogInterface.OnMultiChoiceClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which,
@@ -426,6 +597,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                         public void onClick(DialogInterface dialog, int id) {
                             // User clicked OK, so save the mSelectedFilter results somewhere
                             // or return them to the component that opened the dialog
+                            applyFilter(mSelectedFilters);
                             dialog.dismiss();
                         }
                     })
@@ -438,6 +610,46 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
             return builder.create();
         }
+    }
+
+    private void applyFilter(ArrayList<Integer> selectedFilters) {
+        ArrayList<CoworkBundle> coworkBundleArrayList = getFilteredCoworkBundle(selectedFilters);
+
+        if (coworkBundleArrayList.size() > 0) {
+            ArrayList<CoWork> coWorks = new ArrayList<>();
+            ArrayList<UserProfile> userProfiles = new ArrayList<>();
+
+            for (CoworkBundle coworkBundle : coworkBundleArrayList) {
+                coWorks.add(coworkBundle.getCoWork());
+                userProfiles.add(coworkBundle.getUserProfile());
+            }
+
+            mMarkerCoWorkHashMap = null;
+            coworkBundleArrayList = null;
+            setMarkers(coWorks, userProfiles, mLocation, true);
+        } else {
+            mMap.clear();
+        }
+    }
+
+    private ArrayList<CoworkBundle> getFilteredCoworkBundle(ArrayList<Integer> selectedFilters) {
+
+        ArrayList<CoworkBundle> coworkBundleArrayList = new ArrayList<>();
+
+        for(int i = 0; i < mCoWorkArrayList.size(); i++) {
+            CoworkBundle coworkBundle = new CoworkBundle();
+            CoWork coWork = mCoWorkArrayList.get(i);
+            if(selectedFilters.contains(coWork.getActivityType())) {
+                coworkBundle.setCoWork(coWork);
+                //coWorks.add(mCoWorkArrayList.get(i));
+                coworkBundle.setUserProfile(getUserProfileFromUserID(coWork.getCreatorID(), mUserProfileArrayList));
+                //userProfiles.add(getUserProfileFromUserID(coWork.getCreatorID(), mUserProfileArrayList));
+
+                coworkBundleArrayList.add(coworkBundle);
+            }
+        }
+
+        return coworkBundleArrayList;
     }
 
     private void requestNearbyCoworkList(Location location){
@@ -460,6 +672,39 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         startService(intent);
     }
 
+    private void addUserAsAttendee(int coworkID, String userID) {
+
+        /* Starting Download Service */
+        IntentServiceReceiver receiver = new IntentServiceReceiver(new Handler());
+        receiver.setReceiver(DiscoverActivity.this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
+
+            /* Send optional extras to Download IntentService */
+        intent.putExtra(CoworkIntentService.COWORK_ID, coworkID);
+        intent.putExtra(CoworkIntentService.USER_ID, userID);
+        intent.putExtra(CoworkIntentService.RECEIVER, receiver);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.COWORK_REQUEST);
+        intent.putExtra(CoworkIntentService.REQUEST_TYPE, Constants.Request.ADD_USER_AS_ATTENDEE);
+
+        startService(intent);
+    }
+
+    private void requestUserProfiles(ArrayList<CoWork> coWorks){
+
+        /* Starting Download Service */
+        IntentServiceReceiver receiver = new IntentServiceReceiver(new Handler());
+        receiver.setReceiver(DiscoverActivity.this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
+
+            /* Send optional extras to Download IntentService */
+        intent.putExtra(CoworkIntentService.COWORK, coWorks);
+        intent.putExtra(CoworkIntentService.RECEIVER, receiver);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.USER_REQUEST);
+        intent.putExtra(CoworkIntentService.REQUEST_TYPE, Constants.Request.GET_CORRESPONDING_USER_PROFILE_LIST);
+
+        startService(intent);
+    }
+
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
         Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
@@ -470,15 +715,27 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                 break;
 
             case CoworkIntentService.STATUS_FINISHED:
-                Toast.makeText(DiscoverActivity.this, "Fetched successfully!", Toast.LENGTH_LONG).show();
-                Log.d(TAG, "Fetched successfully");
                 if (resultData != null) {
                     int requestType = resultData.getInt(CoworkIntentService.REQUEST_TYPE);
                     if (requestType == Constants.Request.GET_NEARBY_COWORKS_FROM_SERVER) {
-                        Log.d(TAG, "Got success!");
-                        ArrayList<CoWork> coWorks = (ArrayList<CoWork>) resultData.getSerializable(CoworkIntentService.RESULT);
-                        Log.d(TAG, "cowork: " + coWorks);
-                        setMarkers(coWorks, mLocation);
+                        Log.d(TAG, "Fetched successfully");
+                        Toast.makeText(DiscoverActivity.this, "Got nearby coworks", Toast.LENGTH_LONG).show();
+                        mCoWorkArrayList = (ArrayList<CoWork>) resultData.getSerializable(CoworkIntentService.RESULT);
+                        Log.d(TAG, "cowork: " + mCoWorkArrayList);
+                        requestUserProfiles(mCoWorkArrayList);
+                    } else if (requestType == Constants.Request.GET_CORRESPONDING_USER_PROFILE_LIST) {
+                        Toast.makeText(DiscoverActivity.this, "Fetched successfully", Toast.LENGTH_LONG).show();
+                        dismissLoadingDialog();
+                        mUserProfileArrayList = (ArrayList<UserProfile>) resultData.getSerializable(CoworkIntentService.RESULT);
+                        setMarkers(mCoWorkArrayList, mUserProfileArrayList, mLocation, false);
+                    } else if (requestType == Constants.Request.ADD_USER_AS_ATTENDEE) {
+                        Toast.makeText(DiscoverActivity.this, "Successfully added to cowork!", Toast.LENGTH_LONG).show();
+                        dismissLoadingDialog();
+                        CoWork coWork = (CoWork) resultData.getSerializable(CoworkIntentService.RESULT);
+                        mHelper.saveCoworkToDatabase(coWork);
+                        if(mCoworkDialog != null) {
+                            mCoworkDialog.dismiss();
+                        }
                     }
                 }
                 break;
@@ -486,6 +743,50 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             case CoworkIntentService.STATUS_ERROR:
                 Toast.makeText(DiscoverActivity.this, "Error fetching nearby CoWorks. Please try again...", Toast.LENGTH_LONG).show();
                 break;
+        }
+    }
+
+    private class CustomInfoWindowAdapter implements GoogleMap.InfoWindowAdapter {
+        Context context;
+        CoWork coWork;
+        UserProfile userProfile;
+
+        public CustomInfoWindowAdapter(Context context, CoWork coWork, UserProfile userProfile) {
+            this.context = context;
+            this.coWork = coWork;
+            this.userProfile = userProfile;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+
+            return null;
+        }
+
+        @Override
+        public View getInfoWindow(final Marker marker) {
+            LayoutInflater inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            View view = inflater.inflate(R.layout.marker_info_window_discover, null);
+
+            TextView title = (TextView) view.findViewById(R.id.textViewTitle);
+            TextView activity = (TextView) view.findViewById(R.id.textViewActivity);
+            TextView address = (TextView) view.findViewById(R.id.textViewAddress);
+
+            if (userProfile.getName() != null && userProfile.getName().equals("") == false) {
+                title.setText(userProfile.getName());
+            } else {
+                title.setVisibility(TextView.GONE);
+            }
+
+            activity.setText(mActivities[coWork.getActivityType()]);
+
+            if (coWork.getLocationName() != null && coWork.getLocationName().equals("") == false) {
+                address.setText("Address: " + coWork.getLocationName());
+            } else {
+                address.setVisibility(TextView.GONE);
+            }
+
+            return view;
         }
     }
 }

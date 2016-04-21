@@ -213,7 +213,7 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                  When Helper returns, save the profile in preferences.
                             */
                             mHelper = new HelperClass(getApplicationContext());
-                            mHelper.saveProfileToPreference(userProfile);
+                            mHelper.saveFbProfileToPreference(userProfile);
 
                             Thread.sleep(1000);
 
