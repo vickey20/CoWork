@@ -3,6 +3,7 @@ package com.vickey.cowork.utilities;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
@@ -18,6 +19,7 @@ import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -89,8 +91,8 @@ public class HelperClass {
                         coWork.setAttendeesID(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_ATTENDEES_ID)));
                         coWork.setNumAttendees(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_NUM_ATTENDEES)));
                         coWork.setLocationName(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_lOCATION_NAME)));
-                        coWork.setLocationLat(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LATITUDE)));
-                        coWork.setLocationLng(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
+                        coWork.setLocationLat(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LATITUDE)));
+                        coWork.setLocationLng(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
                         coWork.setTime(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_TIME)));
                         coWork.setDate(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DATE)));
                         coWork.setActivityType(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_ACTIVITY_TYPE)));
@@ -120,7 +122,7 @@ public class HelperClass {
     }
 
     public int saveCoworkToDatabase(CoWork coWork){
-
+        Log.d(TAG, "saveCoworkToDatabase");
         try {
 
             ContentValues values = new ContentValues();
@@ -145,13 +147,12 @@ public class HelperClass {
 
             mDatabase.close();
 
-
+            return 1;
         }
         catch (Exception e){
             e.printStackTrace();
             return 0;
         }
-        return 1;
     }
 
     public int saveUserProfileToDB(UserProfile userProfile){
@@ -204,7 +205,7 @@ public class HelperClass {
                 {
                     do
                     {
-                        userProfile.setUserId(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_USER_ID)));
+                        userProfile.setUserId(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_USER_ID)));
                         userProfile.setName(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_NAME)));
                         userProfile.setEmail(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_EMAIL)));
                         userProfile.setProfession(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_PROFESSION)));
@@ -254,7 +255,7 @@ public class HelperClass {
         return jsonResp;
     }
 
-    public void saveProfileToPreference(UserProfile profile){
+    public void saveFbProfileToPreference(UserProfile profile){
 
         Log.d(TAG, "saveProfileToPreference");
 
@@ -264,6 +265,7 @@ public class HelperClass {
         editor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
         editor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_FACEBOOK);
 
+        editor.putString(Constants.PreferenceKeys.KEY_USER_ID, profile.getEmail());
         editor.putString(Constants.PreferenceKeys.KEY_USER_NAME, profile.getName());
         editor.putString(Constants.PreferenceKeys.KEY_USER_BIRTHDAY, profile.getBirthday());
         editor.putInt(Constants.PreferenceKeys.KEY_USER_AGE, getAgeFromBday(profile.getBirthday()));
@@ -300,4 +302,75 @@ public class HelperClass {
 
         return coworkList;
     }
+
+    public static void deleteCache(Context context) {
+        try {
+            File dir = context.getCacheDir();
+            deleteDir(dir);
+        } catch (Exception e) {}
+    }
+
+    public static boolean deleteDir(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            String[] children = dir.list();
+            for (int i = 0; i < children.length; i++) {
+                boolean success = deleteDir(new File(dir, children[i]));
+                if (!success) {
+                    return false;
+                }
+            }
+            return dir.delete();
+        }
+        else if(dir!= null && dir.isFile())
+            return dir.delete();
+        else {
+            return false;
+        }
+    }
+
+    public static int calculateInSampleSize(
+            BitmapFactory.Options options, int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            final int halfHeight = height / 2;
+            final int halfWidth = width / 2;
+
+            // Calculate the largest inSampleSize value that is a power of 2 and keeps both
+            // height and width larger than the requested height and width.
+            while ((halfHeight / inSampleSize) > reqHeight
+                    && (halfWidth / inSampleSize) > reqWidth) {
+                inSampleSize *= 2;
+            }
+        }
+
+        return inSampleSize;
+    }
+
+    public static Bitmap decodeSampledBitmapFromResource(Resources res, int resId,
+                                                         int reqWidth, int reqHeight) {
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        BitmapFactory.decodeResource(res, resId, options);
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, reqWidth, reqHeight);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        return BitmapFactory.decodeResource(res, resId, options);
+    }
+
+    public static float convertDpToPixel(float dp){
+        float scale = Resources.getSystem().getDisplayMetrics().density;
+        float px = (dp * scale) + 0.5f;
+        return px;
+    }
+
 }

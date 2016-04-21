@@ -4,12 +4,15 @@ import android.graphics.Bitmap;
 
 import com.vickey.cowork.utilities.Constants;
 
+import java.io.Serializable;
+
 /**
  * Created by vikram on 11/19/2015.
  */
-public class UserProfile {
+public class UserProfile implements Serializable{
 
-    int userId;
+    String userId;
+    String password;
     String name;
     String gender;
     String profession;
@@ -19,7 +22,8 @@ public class UserProfile {
     Integer loginType;
 
     public UserProfile(){
-        userId = 0;
+        userId = "";
+        password = "";
         name = "";
         gender = "";
         profession = "";
@@ -29,11 +33,19 @@ public class UserProfile {
         photo = null;
     }
 
-    public int getUserId() {
+    public String getUserId() {
         return userId;
     }
-    public void setUserId(int userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public String getName() {
