@@ -1,6 +1,7 @@
 package com.vickey.cowork.activity;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,9 +19,16 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.model.Marker;
+import com.vickey.cowork.CoworkBundle;
+import com.vickey.cowork.UserProfile;
+import com.vickey.cowork.adapter.AttendeesAdapter;
 import com.vickey.cowork.adapter.CardViewAdapter;
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.R;
@@ -31,7 +39,7 @@ import com.vickey.cowork.utilities.HelperClass;
 
 import java.util.ArrayList;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements View.OnClickListener, CardViewAdapter.CardViewAdapterListener {
 
     private final String TAG = "HomeActivity";
 
@@ -51,6 +59,8 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
     ScrollView mScrollView;
     TextView mTextViewCreate, mTextViewDiscover;
     CardView mCardViewStartup;
+    HelperClass mHelperClass;
+    ArrayList<CoWork> mCoWorks;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,17 +106,17 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
+        mHelperClass = new HelperClass(getApplicationContext());
+
     }
 
     @Override
     protected void onResume() {
         super.onResume();
 
-        HelperClass helperClass = new HelperClass(getApplicationContext());
-        ArrayList<CoWork> coWorks = helperClass.getUserCoworkList();
-
-        if(coWorks.size() > 0){
-            mAdapter = new CardViewAdapter(getApplicationContext(), coWorks);
+        mCoWorks = mHelperClass.getUserCoworkList();
+        if(mCoWorks.size() > 0){
+            mAdapter = new CardViewAdapter(HomeActivity.this, mCoWorks);
             mRecyclerView.setAdapter(mAdapter);
             mCardViewStartup.setVisibility(CardView.GONE);
             mRecyclerView.setVisibility(RecyclerView.VISIBLE);
@@ -231,4 +241,89 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             // permissions this app might request
         }
     }
+
+    @Override
+    public void onNumAttendeesClick(int position) {
+
+        /*String attendees = mCoWorks.get(position).getAttendeesID();
+        if (attendees.equals("")) {
+            Toast.makeText(HomeActivity.this, "No one has joined yet...", Toast.LENGTH_LONG).show();
+        } else {
+            String[] attendeesArray = attendees.split(",");
+            showAttendeesDialog(attendeesArray);
+
+        }*/
+    }
+
+    /*private void showAttendeesDialog(UserProfile[] userProfiles) {
+
+        AttendeesAdapter attendeesAdapter = new AttendeesAdapter(HomeActivity.this, userProfiles);
+
+        Dialog mAttendeesDialog = new Dialog(HomeActivity.this);
+        mAttendeesDialog.setContentView(R.layout.layout_dialog_attendees);
+        mAttendeesDialog.setTitle("Attendees");
+        mAttendeesDialog.setCancelable(true);
+
+        RecyclerView recyclerView = (RecyclerView) mAttendeesDialog.findViewById(R.id.recyclerViewAttendees);
+
+        recyclerView.setAdapter(attendeesAdapter);
+
+        mAttendeesDialog.show();
+    }
+
+
+    private void requestUserProfiles(ArrayList<CoWork> coWorks){
+
+        IntentServiceReceiver receiver = new IntentServiceReceiver(new Handler());
+        receiver.setReceiver(HomeActivity.this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
+
+        intent.putExtra(CoworkIntentService.COWORK, coWorks);
+        intent.putExtra(CoworkIntentService.RECEIVER, receiver);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.USER_REQUEST);
+        intent.putExtra(CoworkIntentService.REQUEST_TYPE, Constants.Request.GET_USER_PROFILE);
+
+        startService(intent);
+    }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
+
+        switch (resultCode) {
+            case CoworkIntentService.STATUS_RUNNING:
+
+                break;
+
+            case CoworkIntentService.STATUS_FINISHED:
+                if (resultData != null) {
+                    int requestType = resultData.getInt(CoworkIntentService.REQUEST_TYPE);
+                    if (requestType == Constants.Request.GET_NEARBY_COWORKS_FROM_SERVER) {
+                        Log.d(TAG, "Fetched successfully");
+                        Toast.makeText(DiscoverActivity.this, "Got nearby coworks", Toast.LENGTH_LONG).show();
+                        mCoWorkArrayList = (ArrayList<CoWork>) resultData.getSerializable(CoworkIntentService.RESULT);
+                        Log.d(TAG, "cowork: " + mCoWorkArrayList);
+                        requestUserProfiles(mCoWorkArrayList);
+                    } else if (requestType == Constants.Request.GET_CORRESPONDING_USER_PROFILE_LIST) {
+                        Toast.makeText(DiscoverActivity.this, "Fetched successfully", Toast.LENGTH_LONG).show();
+                        dismissLoadingDialog();
+                        mUserProfileArrayList = (ArrayList<UserProfile>) resultData.getSerializable(CoworkIntentService.RESULT);
+                        setMarkers(mCoWorkArrayList, mUserProfileArrayList, mLocation, false);
+                    } else if (requestType == Constants.Request.ADD_USER_AS_ATTENDEE) {
+                        Toast.makeText(DiscoverActivity.this, "Successfully added to cowork!", Toast.LENGTH_LONG).show();
+                        dismissLoadingDialog();
+                        CoWork coWork = (CoWork) resultData.getSerializable(CoworkIntentService.RESULT);
+                        mHelper.saveCoworkToDatabase(coWork);
+                        if(mCoworkDialog != null) {
+                            mCoworkDialog.dismiss();
+                        }
+                    }
+                }
+                break;
+
+            case CoworkIntentService.STATUS_ERROR:
+                Toast.makeText(DiscoverActivity.this, "Error fetching nearby CoWorks. Please try again...", Toast.LENGTH_LONG).show();
+                break;
+        }
+    }*/
 }

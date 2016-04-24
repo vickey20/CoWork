@@ -133,6 +133,7 @@ public class Constants {
         public final static int SEND_USER_PROFILE_TO_SERVER = 9;
         public final static int UPDATE_USER_PROFILE = 10;
         public final static int GET_USER_PROFILE = 11;
-        public final static int GET_CORRESPONDING_USER_PROFILE_LIST = 12;
+        public final static int GET_ATTENDEES_LIST = 12;
+        public final static int GET_CORRESPONDING_USER_PROFILE_LIST = 13;
     }
 }
