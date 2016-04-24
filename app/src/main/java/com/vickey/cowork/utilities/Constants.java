@@ -77,6 +77,7 @@ public class Constants {
 
         //Table User Profile
         public static final String FIELD_USER_ID = "userId";
+        public static final String FIELD_PASSWORD = "password";
         public static final String FIELD_NAME = "name";
         public static final String FIELD_GENDER = "gender";
         public static final String FIELD_PROFESSION = "profession";
@@ -92,8 +93,8 @@ public class Constants {
                                                                 FIELD_ATTENDEES_ID + " VARCHAR, " +
                                                                 FIELD_NUM_ATTENDEES + " INTEGER, " +
                                                                 FIELD_lOCATION_NAME + " VARCHAR, " +
-                                                                FIELD_LOCATION_LATITUDE + " VARCHAR, " +
-                                                                FIELD_LOCATION_LONGITUDE + " VARCHAR, " +
+                                                                FIELD_LOCATION_LATITUDE + " DOUBLE, " +
+                                                                FIELD_LOCATION_LONGITUDE + " DOUBLE, " +
                                                                 FIELD_TIME + " VARCHAR, " +
                                                                 FIELD_DATE + " VARCHAR, " +
                                                                 FIELD_ACTIVITY_TYPE + " INTEGER, " +
@@ -103,7 +104,8 @@ public class Constants {
 
         public static final String QUERY_CREATE_TABLE_USER_PROFILE = "CREATE TABLE IF NOT EXISTS "+TABLE_NAME_USER_PROFILE+"(" +
                                                                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                                                                    FIELD_USER_ID + " INTEGER, " +
+                                                                    FIELD_USER_ID + " VARCHAR, " +
+                                                                    FIELD_PASSWORD + " VARCHAR, " +
                                                                     FIELD_NAME + " VARCHAR, " +
                                                                     FIELD_GENDER + " VARCHAR, " +
                                                                     FIELD_PROFESSION + " VARCHAR, " +
@@ -117,5 +119,20 @@ public class Constants {
         public final static int REQUEST_CHECK_SETTINGS = 100;
         public final static int PERMISSION_REQUEST_ACCESS_FINE_LOCATION = 201;
         public final static int CONNECTION_FAILURE_RESOLUTION_REQUEST = 9000;
+    }
+
+    public class Request{
+        public final static int COWORK_REQUEST = 1;
+        public final static int USER_REQUEST = 2;
+        public final static int SEND_COWORK_TO_SERVER = 3;
+        public final static int GET_COWORK_FROM_SERVER = 4;
+        public final static int GET_ALL_COWORKS_FROM_SERVER = 5;
+        public final static int GET_NEARBY_COWORKS_FROM_SERVER = 6;
+        public final static int UPDATE_COWORK = 7;
+        public final static int ADD_USER_AS_ATTENDEE = 8;
+        public final static int SEND_USER_PROFILE_TO_SERVER = 9;
+        public final static int UPDATE_USER_PROFILE = 10;
+        public final static int GET_USER_PROFILE = 11;
+        public final static int GET_CORRESPONDING_USER_PROFILE_LIST = 12;
     }
 }

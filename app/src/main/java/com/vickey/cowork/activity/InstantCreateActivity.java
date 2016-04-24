@@ -372,8 +372,8 @@ public class InstantCreateActivity extends AppCompatActivity implements GoogleAp
     private CoWork createCowork() {
         CoWork coWork = new CoWork();
         coWork.setCreatorID(HomeActivity.USER_ID);
-        coWork.setLocationLat(String.valueOf(mLatitude));
-        coWork.setLocationLng(String.valueOf(mLongitude));
+        coWork.setLocationLat(mLatitude);
+        coWork.setLocationLng(mLongitude);
         coWork.setLocationName(mAddress);
         coWork.setActivityType(mActivityPosition);
         coWork.setTime(mTime);

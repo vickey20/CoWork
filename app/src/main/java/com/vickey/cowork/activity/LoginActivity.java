@@ -9,6 +9,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AlertDialog;
@@ -35,6 +36,7 @@ import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -46,6 +48,8 @@ import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
 import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
+import com.vickey.cowork.receiver.IntentServiceReceiver;
+import com.vickey.cowork.service.CoworkIntentService;
 import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
@@ -61,7 +65,7 @@ import static android.Manifest.permission.READ_CONTACTS;
 /**
  * A login screen that offers login via email/password.
  */
-public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor> {
+public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<Cursor>, IntentServiceReceiver.Receiver {
 
     /**
      * Id to identity READ_CONTACTS permission request.
@@ -193,10 +197,12 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                         try {
 
                             UserProfile userProfile = new UserProfile();
-                            userProfile.setUserId(0);
+                            userProfile.setUserId(object.getString("email"));
+                            userProfile.setPassword(object.getString("email"));
                             userProfile.setName(object.getString("name"));
                             userProfile.setEmail(object.getString("email"));
                             userProfile.setGender(object.getString("gender"));
+                            userProfile.setProfession("");
                             userProfile.setBirthday(object.getString("birthday"));
                             userProfile.setLoginType(Constants.LoginType.LOGIN_TYPE_FACEBOOK);
 
@@ -207,9 +213,11 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
                                  When Helper returns, save the profile in preferences.
                             */
                             mHelper = new HelperClass(getApplicationContext());
-                            mHelper.saveProfileToPreference(userProfile);
+                            mHelper.saveFbProfileToPreference(userProfile);
 
                             Thread.sleep(1000);
+
+                            sendProfileToServer(userProfile);
 
                             //start HomeActvity
                             startHomeActivity();
@@ -362,9 +370,17 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
             SharedPreferences.Editor editor = sharedPref.edit();
             editor.putInt(Constants.PreferenceKeys.KEY_USER_LOGIN_TYPE, Constants.LoginType.LOGIN_TYPE_NEW_REGISTER);
             editor.putInt(Constants.PreferenceKeys.KEY_LOGIN_FLAG, Constants.Login.LOGIN_TRUE);
+            editor.putString(Constants.PreferenceKeys.KEY_USER_ID, email);
             editor.putString(Constants.PreferenceKeys.KEY_USER_EMAIL, email);
             editor.putString(Constants.PreferenceKeys.KEY_LOGIN_PASSWORD, password);
             editor.commit();
+
+            UserProfile userProfile = new UserProfile();
+            userProfile.setUserId(email);
+            userProfile.setEmail(email);
+            userProfile.setPassword(password);
+            userProfile.setLoginType(Constants.LoginType.LOGIN_TYPE_NEW_REGISTER);
+            sendProfileToServer(userProfile);
 
             startHomeActivity();
 
@@ -525,6 +541,40 @@ public class LoginActivity extends AppCompatActivity implements LoaderCallbacks<
         protected void onCancelled() {
             mAuthTask = null;
             showProgress(false);
+        }
+    }
+
+    private void sendProfileToServer(UserProfile userProfile) {
+        /* Starting Download Service */
+        IntentServiceReceiver receiver = new IntentServiceReceiver(new Handler());
+        receiver.setReceiver(LoginActivity.this);
+        Intent intent = new Intent(Intent.ACTION_SYNC, null, this, CoworkIntentService.class);
+
+            /* Send optional extras to Download IntentService */
+        intent.putExtra(CoworkIntentService.USER, userProfile);
+        intent.putExtra(CoworkIntentService.RECEIVER, receiver);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.USER_REQUEST);
+        intent.putExtra(CoworkIntentService.REQUEST_TYPE, Constants.Request.SEND_USER_PROFILE_TO_SERVER);
+
+        startService(intent);
+    }
+
+    @Override
+    public void onReceiveResult(int resultCode, Bundle resultData) {
+        Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
+
+        switch (resultCode) {
+            case CoworkIntentService.STATUS_RUNNING:
+
+                break;
+
+            case CoworkIntentService.STATUS_FINISHED:
+                Toast.makeText(LoginActivity.this, "Profile saved successfully!", Toast.LENGTH_LONG).show();
+                break;
+
+            case CoworkIntentService.STATUS_ERROR:
+                Toast.makeText(LoginActivity.this, "Error saving profile. Please try again...", Toast.LENGTH_LONG).show();
+                break;
         }
     }
 }
