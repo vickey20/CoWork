@@ -3,6 +3,7 @@ package com.vickey.cowork.adapter;
 import android.content.Context;
 import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.R;
+import com.vickey.cowork.utilities.Constants;
 
 import java.util.ArrayList;
 
@@ -18,6 +20,7 @@ import java.util.ArrayList;
  */
 public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHolder> {
 
+    public final String TAG = CardViewAdapter.class.getSimpleName();
     public static final String DISPLAY_TYPE = "DISPLAY_TYPE";
     public static final int DISPLAY_TYPE_ALL = 1;
     public static final int DISPLAY_TYPE_COWORK_HISTORY = 2;
@@ -25,7 +28,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
 
     ArrayList<CoWork> mCoworkList;
     Context mContext;
-    int mDisplayType;
+    int mDisplayType = 1;
     int mSelectedPosition = -1;
 
     CardViewAdapterListener mCardViewAdapterListener;
@@ -64,10 +67,12 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
             holder.action.setText("Re-use");
         }
 
-        if (position == mSelectedPosition) {
-            holder.action.setTextColor(Color.parseColor(mContext.getResources().getString(R.color.colorPrimary)));
-        } else {
-            holder.action.setTextColor(Color.BLACK);
+        if (mDisplayType == DISPLAY_TYPE_CHOOSE_FROM_HISTORY) {
+            if (position == mSelectedPosition) {
+                holder.action.setTextColor(Color.parseColor(mContext.getResources().getString(R.color.colorPrimary)));
+            } else {
+                holder.action.setTextColor(Color.BLACK);
+            }
         }
 
         holder.action.setOnClickListener(new TextView.OnClickListener() {
@@ -75,14 +80,17 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
             @Override
             public void onClick(View v) {
                 mCardViewAdapterListener.onActionClick(position);
-                if (mSelectedPosition != position) {
-                    holder.action.setTextColor(Color.parseColor(mContext.getResources().getString(R.color.colorPrimary)));
-                    mSelectedPosition = position;
-                } else {
-                    holder.action.setTextColor(Color.BLACK);
-                    mSelectedPosition = -1;
+
+                if (mDisplayType == DISPLAY_TYPE_CHOOSE_FROM_HISTORY) {
+                    if (mSelectedPosition != position) {
+                        holder.action.setTextColor(Color.parseColor(mContext.getResources().getString(R.color.colorPrimary)));
+                        mSelectedPosition = position;
+                    } else {
+                        holder.action.setTextColor(Color.BLACK);
+                        mSelectedPosition = -1;
+                    }
+                    notifyDataSetChanged();
                 }
-                notifyDataSetChanged();
             }
         });
     }
