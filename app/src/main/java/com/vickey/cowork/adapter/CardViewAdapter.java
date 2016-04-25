@@ -1,6 +1,7 @@
 package com.vickey.cowork.adapter;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,12 +18,27 @@ import java.util.ArrayList;
  */
 public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHolder> {
 
+    public static final String DISPLAY_TYPE = "DISPLAY_TYPE";
+    public static final int DISPLAY_TYPE_ALL = 1;
+    public static final int DISPLAY_TYPE_COWORK_HISTORY = 2;
+    public static final int DISPLAY_TYPE_CHOOSE_FROM_HISTORY = 3;
+
     ArrayList<CoWork> mCoworkList;
     Context mContext;
+    int mDisplayType;
+    int mSelectedPosition = -1;
 
-    public CardViewAdapter(Context context, ArrayList<CoWork> coWorkList){
+    CardViewAdapterListener mCardViewAdapterListener;
+
+    public interface CardViewAdapterListener {
+        void onActionClick(int position);
+    }
+
+    public CardViewAdapter(Context context, CardViewAdapterListener listener, ArrayList<CoWork> coWorkList, int displayType){
         mContext = context;
         mCoworkList = coWorkList;
+        mDisplayType = displayType;
+        mCardViewAdapterListener = listener;
     }
 
     @Override
@@ -34,13 +50,41 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
 
         holder.location.setText(mCoworkList.get(position).getLocationName());
         String[] activityType = mContext.getResources().getStringArray(R.array.array_activities);
         holder.activityType.setText(activityType[mCoworkList.get(position).getActivityType()]);
         holder.numAttendees.setText(String.valueOf(mCoworkList.get(position).getNumAttendees()));
         holder.time.setText(mCoworkList.get(position).getTime() + " " + mCoworkList.get(position).getDate());
+
+        if(mDisplayType == DISPLAY_TYPE_ALL) {
+            holder.action.setText("Done");
+        } else if(mDisplayType == DISPLAY_TYPE_COWORK_HISTORY || mDisplayType == DISPLAY_TYPE_CHOOSE_FROM_HISTORY) {
+            holder.action.setText("Re-use");
+        }
+
+        if (position == mSelectedPosition) {
+            holder.action.setTextColor(Color.parseColor(mContext.getResources().getString(R.color.colorPrimary)));
+        } else {
+            holder.action.setTextColor(Color.BLACK);
+        }
+
+        holder.action.setOnClickListener(new TextView.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+                mCardViewAdapterListener.onActionClick(position);
+                if (mSelectedPosition != position) {
+                    holder.action.setTextColor(Color.parseColor(mContext.getResources().getString(R.color.colorPrimary)));
+                    mSelectedPosition = position;
+                } else {
+                    holder.action.setTextColor(Color.BLACK);
+                    mSelectedPosition = -1;
+                }
+                notifyDataSetChanged();
+            }
+        });
     }
 
     @Override
@@ -49,7 +93,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
     }
 
     class ViewHolder extends RecyclerView.ViewHolder{
-        TextView location, activityType, numAttendees, time;
+        TextView location, activityType, numAttendees, time, action;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -58,6 +102,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
             activityType = (TextView) itemView.findViewById(R.id.textViewActivityTitle);
             numAttendees = (TextView) itemView.findViewById(R.id.textViewNumAttendees);
             time = (TextView) itemView.findViewById(R.id.textViewTime);
+            action = (TextView) itemView.findViewById(R.id.textViewDone);
         }
     }
 }
