@@ -17,6 +17,7 @@ import com.google.android.gms.maps.model.LatLng;
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
+import com.vickey.cowork.activity.HomeActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -75,7 +76,7 @@ public class HelperClass {
 
         try {
             mDatabase = mContext.openOrCreateDatabase(Constants.MyDatabase.DATABASE_NAME, mContext.MODE_PRIVATE, null);
-            Cursor cur = mDatabase.rawQuery("SELECT * FROM "+Constants.MyDatabase.TABLE_NAME_COWORK, null);
+            Cursor cur = mDatabase.rawQuery("SELECT * FROM " + Constants.MyDatabase.TABLE_NAME_COWORK, null);
 
             if(cur != null)
             {
@@ -101,20 +102,62 @@ public class HelperClass {
                         coWork.setCanceled(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_CANCELED)));
 
                         dataList.add(coWork);
-                        Log.d(TAG, "Location name: " + coWork.getLocationName());
-                        Log.d(TAG, "Location activity: " + coWork.getActivityType());
 
                     }while(cur.moveToPrevious());
                 }
 
                 cur.close();
-
             }
 
             mDatabase.close();
-
         } catch (Exception e) {
+            e.printStackTrace();
+        }
 
+        return dataList;
+    }
+
+    public ArrayList<CoWork> getUserCreatedCoworkList() {
+
+        ArrayList<CoWork> dataList = new ArrayList<CoWork>();
+
+        try {
+            mDatabase = mContext.openOrCreateDatabase(Constants.MyDatabase.DATABASE_NAME, mContext.MODE_PRIVATE, null);
+            Cursor cur = mDatabase.rawQuery("SELECT * FROM " + Constants.MyDatabase.TABLE_NAME_COWORK
+                    + " WHERE " + Constants.MyDatabase.FIELD_CREATOR_ID + "=" + "\'" +HomeActivity.USER_ID + "\'", null);
+
+            if(cur != null)
+            {
+                //cur.moveToNext();
+
+                if(cur.moveToLast())
+                {
+                    do
+                    {
+                        CoWork coWork = new CoWork();
+                        coWork.setCoworkID(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_COWORK_ID)));
+                        coWork.setCreatorID(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_CREATOR_ID)));
+                        coWork.setAttendeesID(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_ATTENDEES_ID)));
+                        coWork.setNumAttendees(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_NUM_ATTENDEES)));
+                        coWork.setLocationName(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_lOCATION_NAME)));
+                        coWork.setLocationLat(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LATITUDE)));
+                        coWork.setLocationLng(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
+                        coWork.setTime(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_TIME)));
+                        coWork.setDate(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DATE)));
+                        coWork.setActivityType(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_ACTIVITY_TYPE)));
+                        coWork.setDescription(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DESCRIPTION)));
+                        coWork.setFinished(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_FINISHED)));
+                        coWork.setCanceled(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_CANCELED)));
+
+                        dataList.add(coWork);
+                    }while(cur.moveToPrevious());
+                }
+
+                cur.close();
+            }
+
+            mDatabase.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
 

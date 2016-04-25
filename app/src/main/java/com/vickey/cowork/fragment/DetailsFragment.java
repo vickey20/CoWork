@@ -155,10 +155,12 @@ public class DetailsFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
         String time = sdf.format(c.getTime());
         mTextViewTime.setText(time);
+        mListener.onTimeSet(time);
 
         sdf = new SimpleDateFormat("EEE, MMM dd");
         String date = sdf.format(c.getTime());
         mTextViewDate.setText(date);
+        mListener.onDateSet(date);
     }
 
     public int getNumAttendees(int checkedId){
@@ -179,6 +181,27 @@ public class DetailsFragment extends Fragment {
         return 1;
     }
 
+    public void setNumAttendees(int numAttendees){
+
+        switch (numAttendees){
+            case 1:
+                mRadioGroup.check(R.id.radioButton1);
+                break;
+            case 2:
+                mRadioGroup.check(R.id.radioButton2);
+                break;
+            case 3:
+                mRadioGroup.check(R.id.radioButton3);
+                break;
+            case 4:
+                mRadioGroup.check(R.id.radioButton4);
+                break;
+            case 5:
+                mRadioGroup.check(R.id.radioButton5);
+                break;
+        }
+    }
+
     /**
      * Create a new instance of DetailsFragment
      */
@@ -197,6 +220,18 @@ public class DetailsFragment extends Fragment {
             } else {
                 mTextViewLocation.setText("Couldn't get location");
             }
+
+            int activity = CreateActivity.mCoWork.getActivityType();
+            String description = CreateActivity.mCoWork.getDescription();
+            int numAttendees = CreateActivity.mCoWork.getNumAttendees();
+            String time = CreateActivity.mCoWork.getTime();
+            String date = CreateActivity.mCoWork.getDate();
+
+            mSpinnerActivity.setSelection(activity);
+            mEditTextDescription.setText(description);
+            setNumAttendees(numAttendees);
+            mTextViewTime.setText(time);
+            mTextViewDate.setText(date);
         }
     }
 
