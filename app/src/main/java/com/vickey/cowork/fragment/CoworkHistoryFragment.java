@@ -55,18 +55,6 @@ public class CoworkHistoryFragment extends Fragment implements CardViewAdapter.C
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        /*Bundle extras = getIntent().getExtras();
-
-        if(extras != null) {
-            mDisplayType = extras.getInt(CardViewAdapter.DISPLAY_TYPE);
-        }
-
-        if(mCoWorks.size() > 0){
-            mAdapter = new CardViewAdapter(getApplicationContext(), CoworkHistoryFragment.this, mCoWorks, mDisplayType);
-            mRecyclerView.setAdapter(mAdapter);
-            mRecyclerView.setVisibility(RecyclerView.VISIBLE);
-        }*/
-
         mAdapter = new CardViewAdapter(getActivity(), CoworkHistoryFragment.this, mCoWorks, mDisplayType);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setVisibility(RecyclerView.VISIBLE);

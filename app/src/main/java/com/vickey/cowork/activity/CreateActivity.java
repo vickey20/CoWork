@@ -88,16 +88,6 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             mLaunchMode = extras.getInt(LAUNCH_MODE);
-
-            /*if (mLaunchMode == LAUNCH_MODE_NEW_COWORK) {
-                mCoWork = new CoWork();
-                mCoWork.setCreatorID(HomeActivity.USER_ID);
-                mViewPager.setOffscreenPageLimit(3);
-            } else if (mLaunchMode == LAUNCH_MODE_EXISTING_COWORK) {
-                mViewPager.setOffscreenPageLimit(2);
-                mCoWork = (CoWork) extras.getSerializable("COWORK");
-
-            }*/
         }
 
         mCoWork = new CoWork();
