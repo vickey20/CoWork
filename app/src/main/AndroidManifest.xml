@@ -65,12 +65,14 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.InstantCreateActivity"
-            android:label="Instant CoWork"></activity>
+            android:label="Instant CoWork" />
 
         <service
             android:name=".service.CoworkIntentService"
             android:exported="false" />
 
+        <activity android:name=".activity.CoworkHistoryActivity"
+            android:label="Timeline"></activity>
     </application>
 
 </manifest>

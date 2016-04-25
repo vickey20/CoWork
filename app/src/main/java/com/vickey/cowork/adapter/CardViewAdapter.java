@@ -63,7 +63,9 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
 
         if(mDisplayType == DISPLAY_TYPE_ALL) {
             holder.action.setText("Done");
-        } else if(mDisplayType == DISPLAY_TYPE_COWORK_HISTORY || mDisplayType == DISPLAY_TYPE_CHOOSE_FROM_HISTORY) {
+        } else if(mDisplayType == DISPLAY_TYPE_COWORK_HISTORY) {
+            holder.action.setText("View");
+        } else if (mDisplayType == DISPLAY_TYPE_CHOOSE_FROM_HISTORY) {
             holder.action.setText("Re-use");
         }
 
@@ -79,7 +81,6 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
 
             @Override
             public void onClick(View v) {
-                mCardViewAdapterListener.onActionClick(position);
 
                 if (mDisplayType == DISPLAY_TYPE_CHOOSE_FROM_HISTORY) {
                     if (mSelectedPosition != position) {
@@ -91,6 +92,8 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
                     }
                     notifyDataSetChanged();
                 }
+
+                mCardViewAdapterListener.onActionClick(position);
             }
         });
     }
