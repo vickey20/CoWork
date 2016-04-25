@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.PlaceInfo;
+import com.vickey.cowork.fragment.CoworkHistoryFragment;
 import com.vickey.cowork.fragment.DetailsFragment;
 import com.vickey.cowork.R;
 import com.vickey.cowork.fragment.SelectLocationFragment;

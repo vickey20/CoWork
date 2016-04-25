@@ -1,7 +1,6 @@
-package com.vickey.cowork.activity;
+package com.vickey.cowork.fragment;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.os.Bundle;
@@ -13,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.vickey.cowork.CoWork;
-import com.vickey.cowork.PlaceInfo;
 import com.vickey.cowork.R;
 import com.vickey.cowork.adapter.CardViewAdapter;
 import com.vickey.cowork.utilities.HelperClass;
