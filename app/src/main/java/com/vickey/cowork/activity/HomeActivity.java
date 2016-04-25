@@ -123,18 +123,25 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
         switch (item.getItemId()){
             case R.id.profile:
-                Intent i = new Intent(HomeActivity.this, ViewProfileActivity.class);
-                startActivity(i);
+                intent = new Intent(HomeActivity.this, ViewProfileActivity.class);
+                startActivity(intent);
                 return true;
             case R.id.instantCowork:
                 int p = mDefaultSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
                 if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && p == 0){
                     checkLocationPermission();
                 } else {
-                    startActivity(new Intent(HomeActivity.this, InstantCreateActivity.class));
+                    intent = new Intent(HomeActivity.this, InstantCreateActivity.class);
+                    startActivity(intent);
                 }
+                return true;
+            case R.id.timeline:
+                intent = new Intent(HomeActivity.this, CoworkHistoryActivity.class);
+                intent.putExtra(CardViewAdapter.DISPLAY_TYPE, CardViewAdapter.DISPLAY_TYPE_COWORK_HISTORY);
+                startActivity(intent);
                 return true;
         }
 
@@ -181,6 +188,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(HomeActivity.this, CreateActivity.class);
+                intent.putExtra(CardViewAdapter.DISPLAY_TYPE, CardViewAdapter.DISPLAY_TYPE_CHOOSE_FROM_HISTORY);
                 intent.putExtra(CreateActivity.LAUNCH_MODE, CreateActivity.LAUNCH_MODE_EXISTING_COWORK);
                 startActivity(intent);
                 dialog.dismiss();
