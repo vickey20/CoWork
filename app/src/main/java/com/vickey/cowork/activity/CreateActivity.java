@@ -15,6 +15,7 @@ import android.widget.Toast;
 
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.PlaceInfo;
+import com.vickey.cowork.fragment.CoworkHistoryFragment;
 import com.vickey.cowork.fragment.DetailsFragment;
 import com.vickey.cowork.R;
 import com.vickey.cowork.fragment.SelectLocationFragment;
@@ -27,11 +28,16 @@ import com.vickey.cowork.utilities.HelperClass;
 
 public class CreateActivity extends AppCompatActivity implements View.OnClickListener,
         SelectLocationFragment.SelectLocationListener,
+        CoworkHistoryFragment.CoworkHistoryListener,
         DetailsFragment.DetailsListener,
         ShareFragment.ShareListener,
         IntentServiceReceiver.Receiver {
 
     private final String TAG = "CreateActivity";
+    public static final String LAUNCH_MODE = "LAUNCH_MODE";
+
+    public static final int LAUNCH_MODE_NEW_COWORK = 1;
+    public static final int LAUNCH_MODE_EXISTING_COWORK = 2;
 
     //UI widgets
     private CustomViewPager mViewPager;
@@ -45,9 +51,11 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
 
     public static CoWork mCoWork;
 
-    private boolean isLocationSet;
+    private boolean isLocationSet, isCoworkSelected;
 
     ProgressDialog mProgressDialog;
+
+    public static int mLaunchMode = 1;
 
     @Override
     protected void onResume() {
@@ -75,15 +83,17 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         mPrev.setVisibility(TextView.GONE);
 
         mFragmentManager = getSupportFragmentManager();
-        mViewPager.setOffscreenPageLimit(3);
         mAdapter = new MyAdapter(mFragmentManager);
 
-        mViewPager.setAdapter(mAdapter);
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            mLaunchMode = extras.getInt(LAUNCH_MODE);
+        }
 
         mCoWork = new CoWork();
-
-
         mCoWork.setCreatorID(HomeActivity.USER_ID);
+        mViewPager.setOffscreenPageLimit(3);
+        mViewPager.setAdapter(mAdapter);
     }
 
     @Override
@@ -130,6 +140,13 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         mCoWork.setDate(date);
     }
 
+    @Override
+    public void onCoworkSelected(CoWork cowork) {
+        mCoWork = cowork;
+        isCoworkSelected = true;
+        Log.d(TAG, "onCoworkSelected()");
+    }
+
     public static class MyAdapter extends FragmentStatePagerAdapter {
         public MyAdapter(FragmentManager fm) {
             super(fm);
@@ -144,8 +161,11 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
         @Override
         public Fragment getItem(int position) {
 
-            if (position == 0){
+            if (position == 0 && mLaunchMode == LAUNCH_MODE_NEW_COWORK){
                 return SelectLocationFragment.newInstance();
+            }
+            else if (position == 0 && mLaunchMode == LAUNCH_MODE_EXISTING_COWORK) {
+                return CoworkHistoryFragment.newInstance();
             }
             else if(position == 1){
                 return DetailsFragment.newInstance();
@@ -166,8 +186,11 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
                 break;
 
             case R.id.textViewNext:
-                if(mTracker == 0 && isLocationSet == false) {
+                if(mTracker == 0 && mLaunchMode == LAUNCH_MODE_NEW_COWORK && isLocationSet == false) {
                     Toast.makeText(CreateActivity.this, "Please select a location...", Toast.LENGTH_LONG).show();
+                }
+                else if (mTracker == 0 && mLaunchMode == LAUNCH_MODE_EXISTING_COWORK && isCoworkSelected == false) {
+                    Toast.makeText(CreateActivity.this, "Please select a cowork...", Toast.LENGTH_LONG).show();
                 }
                 else {
                     ++mTracker;
