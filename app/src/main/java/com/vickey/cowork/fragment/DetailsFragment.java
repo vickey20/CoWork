@@ -5,6 +5,8 @@ import android.app.DatePickerDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.app.TimePickerDialog;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.Editable;
@@ -18,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -25,7 +28,9 @@ import android.widget.TimePicker;
 
 import com.vickey.cowork.R;
 import com.vickey.cowork.activity.CreateActivity;
+import com.vickey.cowork.utilities.HelperClass;
 
+import java.io.ByteArrayOutputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -37,6 +42,7 @@ public class DetailsFragment extends Fragment {
     private final int CHAR_COUNT = 200;
     private DetailsListener mListener;
 
+    ImageView mLocationImage;
     Spinner mSpinnerActivity;
     EditText mEditTextDescription;
     TextView mTextViewLocation, mTextViewTime, mTextViewDate, mTextViewCharCount;
@@ -64,6 +70,7 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v =  inflater.inflate(R.layout.fragment_details, container, false);
 
+        mLocationImage = (ImageView) v.findViewById(R.id.imageViewMap);
         mSpinnerActivity = (Spinner) v.findViewById(R.id.spinnerActivity);
         mEditTextDescription = (EditText) v.findViewById(R.id.editTextDescription);
         mTextViewLocation = (TextView) v.findViewById(R.id.textViewLocationName);
@@ -78,6 +85,9 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
+
+        Bitmap bitmap = HelperClass.decodeSampledBitmapFromResource(getResources(), R.drawable.maps_shot, (int) HelperClass.convertDpToPixel(300), (int) HelperClass.convertDpToPixel(200));
+        mLocationImage.setImageBitmap(bitmap);
 
         mActivities =  getResources().getStringArray(R.array.array_activities);
         mTextViewCharCount.setText(String.valueOf(CHAR_COUNT));
@@ -145,10 +155,12 @@ public class DetailsFragment extends Fragment {
         SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
         String time = sdf.format(c.getTime());
         mTextViewTime.setText(time);
+        mListener.onTimeSet(time);
 
         sdf = new SimpleDateFormat("EEE, MMM dd");
         String date = sdf.format(c.getTime());
         mTextViewDate.setText(date);
+        mListener.onDateSet(date);
     }
 
     public int getNumAttendees(int checkedId){
@@ -169,6 +181,27 @@ public class DetailsFragment extends Fragment {
         return 1;
     }
 
+    public void setNumAttendees(int numAttendees){
+
+        switch (numAttendees){
+            case 1:
+                mRadioGroup.check(R.id.radioButton1);
+                break;
+            case 2:
+                mRadioGroup.check(R.id.radioButton2);
+                break;
+            case 3:
+                mRadioGroup.check(R.id.radioButton3);
+                break;
+            case 4:
+                mRadioGroup.check(R.id.radioButton4);
+                break;
+            case 5:
+                mRadioGroup.check(R.id.radioButton5);
+                break;
+        }
+    }
+
     /**
      * Create a new instance of DetailsFragment
      */
@@ -187,6 +220,18 @@ public class DetailsFragment extends Fragment {
             } else {
                 mTextViewLocation.setText("Couldn't get location");
             }
+
+            int activity = CreateActivity.mCoWork.getActivityType();
+            String description = CreateActivity.mCoWork.getDescription();
+            int numAttendees = CreateActivity.mCoWork.getNumAttendees();
+            String time = CreateActivity.mCoWork.getTime();
+            String date = CreateActivity.mCoWork.getDate();
+
+            mSpinnerActivity.setSelection(activity);
+            mEditTextDescription.setText(description);
+            setNumAttendees(numAttendees);
+            mTextViewTime.setText(time);
+            mTextViewDate.setText(date);
         }
     }
 

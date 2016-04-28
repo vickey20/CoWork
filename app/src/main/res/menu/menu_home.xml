@@ -5,16 +5,22 @@
     tools:context=".activity.HomeActivity">
 
     <item
-        android:id="@+id/profile"
-        android:title="View Profile"
-        action:showAsAction="always"
-        android:icon="@drawable/profile">
-    </item>
-    <item
         android:id="@+id/instantCowork"
         android:title="Instant Cowork"
         action:showAsAction="always"
         android:icon="@drawable/quick_create">
+    </item>
+    <item
+        android:id="@+id/timeline"
+        android:title="Timeline"
+        action:showAsAction="always"
+        android:icon="@drawable/timeline">
+    </item>
+    <item
+        android:id="@+id/profile"
+        android:title="View Profile"
+        action:showAsAction="always"
+        android:icon="@drawable/profile">
     </item>
     <item
         android:id="@+id/logout"

@@ -1,6 +1,7 @@
 package com.vickey.cowork.activity;
 
 import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -28,12 +29,12 @@ import com.vickey.cowork.utilities.HelperClass;
 
 import java.util.ArrayList;
 
-public class HomeActivity extends AppCompatActivity implements View.OnClickListener {
+public class HomeActivity extends AppCompatActivity implements View.OnClickListener, CardViewAdapter.CardViewAdapterListener {
 
     private final String TAG = "HomeActivity";
 
     //userID should be accessible everywhere.
-    static String USER_ID;
+    public static String USER_ID;
 
     private final int MY_PERMISSIONS_REQUEST_ACCESS_FINE_LOCATION = 201;
 
@@ -93,7 +94,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(mLayoutManager);
 
-        //HelperClass.setCoworkAlarm(getApplicationContext(), -1, 10 * 1000);
+        HelperClass.setCoworkAlarm(getApplicationContext(), -1, 10 * 1000);
 
         HelperClass.getTimeInMillis("Sat, Apr 9 22:10 PM", Constants.TimeAndDate.DATE_FORMAT + " " + Constants.TimeAndDate.TIME_FORMAT);
 
@@ -106,7 +107,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
         ArrayList<CoWork> coWorks = helperClass.getUserCoworkList();
 
         if(coWorks.size() > 0){
-            mAdapter = new CardViewAdapter(getApplicationContext(), coWorks);
+            mAdapter = new CardViewAdapter(getApplicationContext(), HomeActivity.this, coWorks, CardViewAdapter.DISPLAY_TYPE_ALL);
             mRecyclerView.setAdapter(mAdapter);
             mCardViewStartup.setVisibility(CardView.GONE);
             mRecyclerView.setVisibility(RecyclerView.VISIBLE);
@@ -125,18 +126,25 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
         switch (item.getItemId()){
             case R.id.profile:
-                Intent i = new Intent(HomeActivity.this, ViewProfileActivity.class);
-                startActivity(i);
+                intent = new Intent(HomeActivity.this, ViewProfileActivity.class);
+                startActivity(intent);
                 return true;
             case R.id.instantCowork:
                 int p = mDefaultSharedPref.getInt(Constants.PreferenceKeys.KEY_PERMISSION_ACCESS_FINE_LOCATION, Constants.Permissions.PERMISSION_DENIED);
                 if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && p == 0){
                     checkLocationPermission();
                 } else {
-                    startActivity(new Intent(HomeActivity.this, InstantCreateActivity.class));
+                    intent = new Intent(HomeActivity.this, InstantCreateActivity.class);
+                    startActivity(intent);
                 }
+                return true;
+            case R.id.timeline:
+                intent = new Intent(HomeActivity.this, CoworkHistoryActivity.class);
+                intent.putExtra(CardViewAdapter.DISPLAY_TYPE, CardViewAdapter.DISPLAY_TYPE_COWORK_HISTORY);
+                startActivity(intent);
                 return true;
         }
 
@@ -153,8 +161,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 if((Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) && p == 0){
                     checkLocationPermission();
                 } else {
-                    intent = new Intent(HomeActivity.this, CreateActivity.class);
-                    startActivity(intent);
+                    showCoworkCreationOptionsDialog();
                 }
                 break;
 
@@ -167,6 +174,42 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 break;
         }
+    }
+
+    private void showCoworkCreationOptionsDialog() {
+
+        final Dialog dialog = new Dialog(HomeActivity.this);
+        dialog.setContentView(R.layout.dialog_cowork_creation);
+        dialog.setTitle("Create Co-Work");
+        dialog.setCancelable(true);
+
+        TextView reuseCowork = (TextView) dialog.findViewById(R.id.textViewReuseCowork);
+        TextView newCowork = (TextView) dialog.findViewById(R.id.textViewNewCowork);
+
+        reuseCowork.setOnClickListener(new TextView.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, CreateActivity.class);
+                intent.putExtra(CardViewAdapter.DISPLAY_TYPE, CardViewAdapter.DISPLAY_TYPE_CHOOSE_FROM_HISTORY);
+                intent.putExtra(CreateActivity.LAUNCH_MODE, CreateActivity.LAUNCH_MODE_EXISTING_COWORK);
+                startActivity(intent);
+                dialog.dismiss();
+            }
+        });
+
+        newCowork.setOnClickListener(new TextView.OnClickListener(){
+
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(HomeActivity.this, CreateActivity.class);
+                intent.putExtra(CreateActivity.LAUNCH_MODE, CreateActivity.LAUNCH_MODE_NEW_COWORK);
+                startActivity(intent);
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
 
     private void checkLocationPermission(){
@@ -230,5 +273,10 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
             // other 'case' lines to check for other
             // permissions this app might request
         }
+    }
+
+    @Override
+    public void onActionClick(int position) {
+        Log.d(TAG, "onActionClick()");
     }
 }
