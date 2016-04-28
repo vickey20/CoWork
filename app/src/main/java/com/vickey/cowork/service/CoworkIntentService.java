@@ -1,19 +1,28 @@
 package com.vickey.cowork.service;
 
 import android.app.IntentService;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.os.ResultReceiver;
+import android.text.TextUtils;
 import android.util.Log;
 
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingEvent;
 import com.google.gson.Gson;
 
 import com.vickey.cowork.AddUserClass;
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.LocationClass;
+import com.vickey.cowork.R;
 import com.vickey.cowork.UserProfile;
 import com.vickey.cowork.UserProfileList;
+import com.vickey.cowork.activity.DiscoverActivity;
+import com.vickey.cowork.activity.HomeActivity;
 import com.vickey.cowork.utilities.Constants;
+import com.vickey.cowork.utilities.GeofenceErrorMessages;
+import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -26,6 +35,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class CoworkIntentService extends IntentService {
 
@@ -33,6 +43,7 @@ public class CoworkIntentService extends IntentService {
     public static final String URL = "http://192.168.1.252:8080/CoWork/api/";
     public static final String COWORK = "cowork";
     public static final String USER = "user";
+    public static final String GEOFENCE = "geofence";
     public static final String LOCATION = "location";
     public static final String COWORK_ID = "coworkID";
     public static final String USER_ID = "userID";
@@ -94,6 +105,8 @@ public class CoworkIntentService extends IntentService {
                         requestCorrespondingUserProfileList(coWorkArrayList);
                         break;
                 }
+            } else if (requestId == Constants.Request.GEOFENCE_REQUEST) {
+                handleGeofenceEvent(intent);
             }
         }
     }
@@ -502,6 +515,88 @@ public class CoworkIntentService extends IntentService {
                     Log.e(TAG, "Error closing stream", e);
                 }
             }
+        }
+    }
+
+    private void handleGeofenceEvent(Intent intent) {
+
+        CoWork coWork = (CoWork) intent.getSerializableExtra(COWORK);
+
+        GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
+        if (geofencingEvent.hasError()) {
+            String errorMessage = GeofenceErrorMessages.getErrorString(this,
+                    geofencingEvent.getErrorCode());
+            Log.e(TAG, errorMessage);
+            return;
+        }
+
+        // Get the transition type.
+        int geofenceTransition = geofencingEvent.getGeofenceTransition();
+
+        // Test that the reported transition was of interest.
+        if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+
+            // Get the geofences that were triggered. A single event can trigger
+            // multiple geofences.
+            List triggeringGeofences = geofencingEvent.getTriggeringGeofences();
+
+            // Get the transition details as a String.
+            String geofenceTransitionDetails = getGeofenceTransitionDetails(
+                    this,
+                    geofenceTransition,
+                    triggeringGeofences
+            );
+
+            // Send notification and log the transition details.
+            HelperClass.showNotification(getApplicationContext(), "Auto Check-in", geofenceTransitionDetails, R.drawable.discover_icon, (int) System.currentTimeMillis(), HomeActivity.class);
+            Log.i(TAG, geofenceTransitionDetails);
+        } else {
+            // Log the error.
+            Log.e(TAG, getString(R.string.geofence_transition_invalid_type,
+                    geofenceTransition));
+        }
+    }
+
+    /**
+     * Gets transition details and returns them as a formatted string.
+     *
+     * @param context               The app context.
+     * @param geofenceTransition    The ID of the geofence transition.
+     * @param triggeringGeofences   The geofence(s) triggered.
+     * @return                      The transition details formatted as String.
+     */
+    private String getGeofenceTransitionDetails(
+            Context context,
+            int geofenceTransition,
+            List<Geofence> triggeringGeofences) {
+
+        String geofenceTransitionString = getTransitionString(geofenceTransition);
+
+        // Get the Ids of each geofence that was triggered.
+        ArrayList triggeringGeofencesIdsList = new ArrayList();
+        for (Geofence geofence : triggeringGeofences) {
+            triggeringGeofencesIdsList.add(geofence.getRequestId());
+        }
+        String triggeringGeofencesIdsString = TextUtils.join(", ",  triggeringGeofencesIdsList);
+
+        return geofenceTransitionString + ": " + triggeringGeofencesIdsString;
+    }
+
+    /**
+     * Maps geofence transition types to their human-readable equivalents.
+     *
+     * @param transitionType    A transition type constant defined in Geofence
+     * @return                  A String indicating the type of transition
+     */
+    private String getTransitionString(int transitionType) {
+        switch (transitionType) {
+            case Geofence.GEOFENCE_TRANSITION_ENTER:
+                return getString(R.string.geofence_transition_entered);
+            case Geofence.GEOFENCE_TRANSITION_EXIT:
+                return getString(R.string.geofence_transition_exited);
+            default:
+                return getString(R.string.unknown_geofence_transition);
         }
     }
 

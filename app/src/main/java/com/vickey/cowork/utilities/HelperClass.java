@@ -1,7 +1,10 @@
 package com.vickey.cowork.utilities;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.database.Cursor;
@@ -10,6 +13,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.location.Location;
 import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
+import android.support.v4.app.TaskStackBuilder;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -21,8 +26,11 @@ import com.vickey.cowork.activity.HomeActivity;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by vikram on 11/19/2015.
@@ -340,6 +348,19 @@ public class HelperClass {
         return age;
     }
 
+    public static long getTimeInMillis(String timeDateString, String dateFormat) {
+        long timeInMilliseconds = 0;
+        SimpleDateFormat sdf = new SimpleDateFormat(dateFormat);
+        try {
+            Date mDate = sdf.parse(timeDateString);
+            timeInMilliseconds = mDate.getTime();
+            System.out.println("Date in milli :: " + timeInMilliseconds);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return timeInMilliseconds;
+    }
+
     public ArrayList<CoWork> getNearbyCoworkList(Location location){
         ArrayList<CoWork> coworkList = new ArrayList<>();
 
@@ -414,6 +435,28 @@ public class HelperClass {
         float scale = Resources.getSystem().getDisplayMetrics().density;
         float px = (dp * scale) + 0.5f;
         return px;
+    }
+
+    public static void showNotification(Context context, String title, String description, int icon, int notificationId, Class activity) {
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
+        builder.setSmallIcon(icon);
+        builder.setContentTitle(title);
+        builder.setContentText(description);
+        builder.setAutoCancel(true);
+
+        Intent intent = new Intent(context, activity);
+        TaskStackBuilder stackBuilder = TaskStackBuilder.create(context);
+        stackBuilder.addParentStack(activity);
+
+        stackBuilder.addNextIntent(intent);
+
+        PendingIntent pendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.notify(notificationId, builder.build());
+
     }
 
 }

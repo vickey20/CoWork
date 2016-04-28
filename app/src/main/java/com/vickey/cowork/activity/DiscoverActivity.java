@@ -3,6 +3,7 @@ package com.vickey.cowork.activity;
 import android.app.Activity;
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,8 +24,8 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,8 @@ import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.Geofence;
+import com.google.android.gms.location.GeofencingRequest;
 import com.google.android.gms.location.LocationListener;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
@@ -62,7 +65,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener, View.OnClickListener, GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener, LocationListener, IntentServiceReceiver.Receiver, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener {
+        GoogleApiClient.OnConnectionFailedListener, LocationListener, IntentServiceReceiver.Receiver, GoogleMap.OnMarkerClickListener, GoogleMap.OnInfoWindowClickListener, ResultCallback<Status> {
 
     public static final String TAG = DiscoverActivity.class.getSimpleName();
     public static final Float CAMERA_ZOOM_HIGH = 16f;
@@ -88,10 +91,14 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     ArrayList<CoWork> mCoWorkArrayList;
     ArrayList<UserProfile> mUserProfileArrayList;
     String[] mActivities;
+    Boolean mIsAutoCheckin;
 
     ArrayList<CoWork> mUserCoworkList;
 
     Dialog mCoworkDialog;
+
+    private ArrayList<Geofence> mGeofenceList;
+    private PendingIntent mGeofencePendingIntent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,6 +118,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
         mGoogleApiClient.connect();
 
+        mGeofenceList = new ArrayList<>();
         mHelper = new HelperClass(getApplicationContext());
         mActivities =  getApplicationContext().getResources().getStringArray(R.array.array_activities);
     }
@@ -498,10 +506,9 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         final CoworkBundle coworkBundle = mMarkerCoWorkHashMap.get(marker);
 
         mCoworkDialog = new Dialog(DiscoverActivity.this);
-        mCoworkDialog.setContentView(R.layout.layout_cowork_dialog);
+        mCoworkDialog.setContentView(R.layout.layout_join_cowork_dialog);
         mCoworkDialog.setTitle("CoWork");
 
-        // set the custom dialog components - text, image and button
         TextView location = (TextView) mCoworkDialog.findViewById(R.id.location);
         location.setText(coworkBundle.getCoWork().getLocationName());
 
@@ -526,14 +533,16 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         TextView date = (TextView) mCoworkDialog.findViewById(R.id.textViewDate);
         date.setText(coworkBundle.getCoWork().getDate());
 
+        final CheckBox autoCheckin = (CheckBox) mCoworkDialog.findViewById(R.id.checkboxAutoCheckin);
+
         Button join = (Button) mCoworkDialog.findViewById(R.id.joinButton);
 
-        // if button is clicked, close the custom dialog
         join.setOnClickListener(new Button.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(isUserAlreadyAttendee(coworkBundle) == false) {
                     addUserAsAttendee(coworkBundle.getCoWork().getCoworkID(), HomeActivity.USER_ID);
+                    mIsAutoCheckin = autoCheckin.isChecked();
                 } else {
                     Toast.makeText(DiscoverActivity.this, "You have already joined this CoWork!", Toast.LENGTH_LONG).show();
                 }
@@ -705,6 +714,63 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         startService(intent);
     }
 
+    private void setGeoFenceForCowork(CoWork coWork) {
+
+        String dateTime = coWork.getDate() + " " + coWork.getTime();
+        long expirationTime = HelperClass.getTimeInMillis(dateTime, Constants.TimeAndDate.DATE_FORMAT + " " + Constants.TimeAndDate.TIME_FORMAT) - System.currentTimeMillis();
+
+        mGeofenceList.add(new Geofence.Builder()
+        .setRequestId(String.valueOf(coWork.getCoworkID()))
+        .setCircularRegion(coWork.getLocationLat(), coWork.getLocationLng(), 100)
+        .setExpirationDuration(expirationTime)
+        .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER | Geofence.GEOFENCE_TRANSITION_EXIT | Geofence.GEOFENCE_TRANSITION_DWELL)
+        .setLoiteringDelay(5 * 60 * 1000)
+        .build());
+
+        LocationServices.GeofencingApi.addGeofences(
+                mGoogleApiClient,
+                getGeofencingRequest(),
+                getGeofencePendingIntent(coWork)
+        ).setResultCallback(DiscoverActivity.this);
+
+    }
+
+    private GeofencingRequest getGeofencingRequest() {
+        GeofencingRequest.Builder builder = new GeofencingRequest.Builder();
+        builder.setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER);
+        builder.addGeofences(mGeofenceList);
+        return builder.build();
+    }
+
+    private PendingIntent getGeofencePendingIntent(CoWork coWork) {
+        // Reuse the PendingIntent if we already have it.
+        if (mGeofencePendingIntent != null) {
+            return mGeofencePendingIntent;
+        }
+        Intent intent = new Intent(this, CoworkIntentService.class);
+        intent.putExtra(CoworkIntentService.REQUEST_ID, CoworkIntentService.GEOFENCE);
+        intent.putExtra(CoworkIntentService.COWORK, coWork);
+        // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
+        // calling addGeofences() and removeGeofences().
+        return PendingIntent.getService(this, 0, intent, PendingIntent.
+                FLAG_UPDATE_CURRENT);
+    }
+
+    @Override
+    public void onResult(Status status) {
+        if (status.isSuccess()) {
+
+            Toast.makeText(
+                    this,
+                    "Geofence added",
+                    Toast.LENGTH_SHORT
+            ).show();
+        } else {
+            // Get the status code for the error and log it using a user-friendly message.
+            Log.e(TAG, "Error in adding geofence");
+        }
+    }
+
     @Override
     public void onReceiveResult(int resultCode, Bundle resultData) {
         Log.d(TAG, "onReceiveResult:: resultCode: " + resultCode + "; resultData: " + resultData);
@@ -732,6 +798,10 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                         Toast.makeText(DiscoverActivity.this, "Successfully added to cowork!", Toast.LENGTH_LONG).show();
                         dismissLoadingDialog();
                         CoWork coWork = (CoWork) resultData.getSerializable(CoworkIntentService.RESULT);
+                        if (mIsAutoCheckin == true) {
+                            coWork.setAutoCheckin(1);
+                            setGeoFenceForCowork(coWork);
+                        }
                         mHelper.saveCoworkToDatabase(coWork);
                         if(mCoworkDialog != null) {
                             mCoworkDialog.dismiss();

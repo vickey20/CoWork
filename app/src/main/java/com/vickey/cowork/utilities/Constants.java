@@ -124,6 +124,7 @@ public class Constants {
     public class Request{
         public final static int COWORK_REQUEST = 1;
         public final static int USER_REQUEST = 2;
+        public final static int GEOFENCE_REQUEST = 3;
         public final static int SEND_COWORK_TO_SERVER = 3;
         public final static int GET_COWORK_FROM_SERVER = 4;
         public final static int GET_ALL_COWORKS_FROM_SERVER = 5;
@@ -134,5 +135,10 @@ public class Constants {
         public final static int UPDATE_USER_PROFILE = 10;
         public final static int GET_USER_PROFILE = 11;
         public final static int GET_CORRESPONDING_USER_PROFILE_LIST = 12;
+    }
+
+    public class TimeAndDate {
+        public static final String TIME_FORMAT = "hh:mm a";
+        public static final String DATE_FORMAT = "EEE, MMM dd";
     }
 }

@@ -86,8 +86,8 @@ public class DetailsFragment extends Fragment {
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        Bitmap bitmap = HelperClass.decodeSampledBitmapFromResource(getResources(), R.drawable.maps_shot, (int) HelperClass.convertDpToPixel(300), (int) HelperClass.convertDpToPixel(200));
-        mLocationImage.setImageBitmap(bitmap);
+        //Bitmap bitmap = HelperClass.decodeSampledBitmapFromResource(getResources(), R.drawable.maps_shot, (int) HelperClass.convertDpToPixel(300), (int) HelperClass.convertDpToPixel(200));
+        //mLocationImage.setImageBitmap(bitmap);
 
         mActivities =  getResources().getStringArray(R.array.array_activities);
         mTextViewCharCount.setText(String.valueOf(CHAR_COUNT));

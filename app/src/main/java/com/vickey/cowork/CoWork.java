@@ -20,6 +20,7 @@ public class CoWork implements Serializable {
     String description;
     int finished;
     int canceled;
+    int autoCheckin;
 
     public CoWork(){
         coworkID = 0;
@@ -35,6 +36,7 @@ public class CoWork implements Serializable {
         description = "";
         finished = 0;
         canceled = 0;
+        autoCheckin = 0;
     }
 
     public int getActivityType() {
@@ -140,4 +142,11 @@ public class CoWork implements Serializable {
         this.time = time;
     }
 
+    public int getAutoCheckin() {
+        return autoCheckin;
+    }
+
+    public void setAutoCheckin(int autoCheckin) {
+        this.autoCheckin = autoCheckin;
+    }
 }
