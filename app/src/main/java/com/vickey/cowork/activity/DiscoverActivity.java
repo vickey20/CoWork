@@ -555,10 +555,14 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     private boolean isUserAlreadyAttendee(CoworkBundle coworkBundle) {
 
         mUserCoworkList = mHelper.getUserCoworkList();
-        Log.d(TAG, "cowork bundle: " + coworkBundle.getCoWork().getAttendeesID());
+        Log.d(TAG, "cowork bundle id: " + coworkBundle.getCoWork().getCoworkID());
+        Log.d(TAG, "cowork bundle attendees: " + coworkBundle.getCoWork().getAttendeesID());
         for (int i = 0; i < mUserCoworkList.size(); i++) {
             Log.d(TAG, "coworkID: " + mUserCoworkList.get(i).getCoworkID());
             Log.d(TAG, "mUserCoworkList attendees: " + mUserCoworkList.get(i).getAttendeesID());
+            if (coworkBundle.getCoWork().getAttendeesID().equals("")) {
+                return false;
+            }
             if (coworkBundle.getCoWork().getAttendeesID().contains(mUserCoworkList.get(i).getAttendeesID())) {
                 return true;
             }

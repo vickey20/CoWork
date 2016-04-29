@@ -40,7 +40,7 @@ import java.util.List;
 public class CoworkIntentService extends IntentService {
 
     public static final String TAG = CoworkIntentService.class.getSimpleName();
-    public static final String URL = "http://192.168.1.252:8080/CoWork/api/";
+    public static final String URL = "http://10.0.3.156:8080/CoWork/api/";
     public static final String COWORK = "cowork";
     public static final String USER = "user";
     public static final String GEOFENCE = "geofence";
@@ -67,9 +67,11 @@ public class CoworkIntentService extends IntentService {
         Log.d(TAG, "onHandleIntent: " + intent);
         if (intent != null) {
             mReceiver = intent.getParcelableExtra(RECEIVER);
-            /* Service Started */
-            mReceiver.send(STATUS_RUNNING, Bundle.EMPTY);
 
+            if (mReceiver != null) {
+            /* Service Started */
+                mReceiver.send(STATUS_RUNNING, Bundle.EMPTY);
+            }
             int requestId = intent.getIntExtra(REQUEST_ID, 0);
             int requestType = intent.getIntExtra(REQUEST_TYPE, 0);
 

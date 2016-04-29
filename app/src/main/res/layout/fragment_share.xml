@@ -17,7 +17,7 @@
         android:layout_width="250dp"
         android:layout_height="50dp"
         android:layout_margin="20dp"
-        android:src="@drawable/share_fb"
+        android:src="@mipmap/ic_launcher"
         android:scaleType="fitXY"
         android:layout_gravity="center"
         />
