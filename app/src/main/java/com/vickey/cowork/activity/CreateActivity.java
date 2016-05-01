@@ -141,6 +141,11 @@ public class CreateActivity extends AppCompatActivity implements View.OnClickLis
     }
 
     @Override
+    public void onDurationSet(long duration) {
+        mCoWork.setDuration(duration);
+    }
+
+    @Override
     public void onCoworkSelected(CoWork cowork) {
         mCoWork = cowork;
         isCoworkSelected = true;
