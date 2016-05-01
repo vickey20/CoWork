@@ -35,6 +35,8 @@
 
     <!-- Strings related to DetailsFragment -->
     <string name="label_choose_activity">So, what are you doing?</string>
+    <string name="label_duration">Duration</string>
+
     <!-- for now, will update later -->
     <string-array name="array_activities">
         <item>Reading</item>
@@ -50,6 +52,14 @@
     <string name="label_three">Three</string>
     <string name="label_four">Four</string>
     <string name="label_five">Five</string>
+
+    <string-array name="array_duration">
+        <item>1 hour</item>
+        <item>2 hours</item>
+        <item>3 hours</item>
+        <item>5 hours</item>
+        <item>8 hours</item>
+    </string-array>
 
     <!-- Strings related to SelectLocationFragment -->
     <string name="toast_drop_pin_message">Press and hold on map to drop pin</string>
@@ -67,11 +77,11 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
-<!--
+    <!--
     <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Place Id: %2$s&lt;/i&gt;&lt;br/&gt;Address: %3$s&lt;br/&gt;Phone: %4$s&lt;br/&gt;Website: %5$s</string>
 -->
 
-<!--
+    <!--
     <string name="place_details">&lt;b&gt;%1$s&lt;/b&gt;&lt;br/&gt;&lt;i&gt;Address: %2$s&lt;br/&gt;Phone: %3$s&lt;br/&gt;Website: %4$s</string>
 -->
 
