@@ -70,6 +70,7 @@ public class Constants {
         public static final String FIELD_LOCATION_LONGITUDE = "locationLng";
         public static final String FIELD_TIME = "time";
         public static final String FIELD_DATE = "date";
+        public static final String FIELD_DURATION = "duration";
         public static final String FIELD_ACTIVITY_TYPE = "activityType";
         public static final String FIELD_DESCRIPTION = "description";
         public static final String FIELD_FINISHED = "finished";
@@ -97,6 +98,7 @@ public class Constants {
                                                                 FIELD_LOCATION_LONGITUDE + " DOUBLE, " +
                                                                 FIELD_TIME + " VARCHAR, " +
                                                                 FIELD_DATE + " VARCHAR, " +
+                                                                FIELD_DURATION + " INTEGER, " +
                                                                 FIELD_ACTIVITY_TYPE + " INTEGER, " +
                                                                 FIELD_DESCRIPTION + " VARCHAR, " +
                                                                 FIELD_FINISHED + " INTEGER, " +

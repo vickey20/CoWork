@@ -22,6 +22,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -43,13 +44,14 @@ public class DetailsFragment extends Fragment {
     private DetailsListener mListener;
 
     ImageView mLocationImage;
-    Spinner mSpinnerActivity;
+    Spinner mSpinnerActivity, mSpinnerDuration;
     EditText mEditTextDescription;
     TextView mTextViewLocation, mTextViewTime, mTextViewDate, mTextViewCharCount;
     RadioGroup mRadioGroup;
+    ScrollView mScrollView;
 
     int mCharCount = 0;
-    String[] mActivities;
+    String[] mActivities, mDurations;
 
     public static DetailsFragment newInstance(String param1, String param2) {
         DetailsFragment fragment = new DetailsFragment();
@@ -70,6 +72,7 @@ public class DetailsFragment extends Fragment {
                              Bundle savedInstanceState) {
         View v =  inflater.inflate(R.layout.fragment_details, container, false);
 
+        mScrollView = (ScrollView) v.findViewById(R.id.scrollView);
         mLocationImage = (ImageView) v.findViewById(R.id.imageViewMap);
         mSpinnerActivity = (Spinner) v.findViewById(R.id.spinnerActivity);
         mEditTextDescription = (EditText) v.findViewById(R.id.editTextDescription);
@@ -78,6 +81,7 @@ public class DetailsFragment extends Fragment {
         mTextViewTime = (TextView) v.findViewById(R.id.textViewTime);
         mRadioGroup = (RadioGroup) v.findViewById(R.id.radioGroup);
         mTextViewDate = (TextView) v.findViewById(R.id.textViewDate);
+        mSpinnerDuration = (Spinner) v.findViewById(R.id.spinnerDuration);
 
         return v;
     }
@@ -90,6 +94,8 @@ public class DetailsFragment extends Fragment {
         //mLocationImage.setImageBitmap(bitmap);
 
         mActivities =  getResources().getStringArray(R.array.array_activities);
+        mDurations =  getResources().getStringArray(R.array.array_duration);
+
         mTextViewCharCount.setText(String.valueOf(CHAR_COUNT));
 
         mEditTextDescription.addTextChangedListener(new TextWatcher() {
@@ -139,6 +145,19 @@ public class DetailsFragment extends Fragment {
             }
         });
 
+        mSpinnerDuration.setOnItemSelectedListener(new Spinner.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Log.d(TAG, "selected duration: " + mDurations[position]);
+                mListener.onDurationSet(getDurationFromPosition(position));
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                mListener.onDurationSet(getDurationFromPosition(0));
+            }
+        });
+
         mRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
@@ -147,8 +166,13 @@ public class DetailsFragment extends Fragment {
             }
         });
 
+        mRadioGroup.check(R.id.radioButton1);
+
         ArrayAdapter<String> adapterActivity = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, mActivities);
         mSpinnerActivity.setAdapter(adapterActivity);
+
+        ArrayAdapter<String> adapterDuration = new ArrayAdapter<String>(getActivity(), android.R.layout.simple_spinner_dropdown_item, mDurations);
+        mSpinnerDuration.setAdapter(adapterDuration);
 
         Calendar c = Calendar.getInstance();
 
@@ -161,6 +185,38 @@ public class DetailsFragment extends Fragment {
         String date = sdf.format(c.getTime());
         mTextViewDate.setText(date);
         mListener.onDateSet(date);
+
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.fullScroll(View.FOCUS_DOWN);
+            }
+        });
+    }
+
+    private long getDurationFromPosition(int position) {
+
+        switch (position) {
+            case 0:
+                // 1 hour
+                return 1 * 60 * 60 * 1000;
+            case 1:
+                // 2 hours
+                return 2 * 60 * 60 * 1000;
+            case 2:
+                // 3 hours
+                return 3 * 60 * 60 * 1000;
+            case 3:
+                // 5 hours
+                return 5 * 60 * 60 * 1000;
+            case 4:
+                // 8 hours
+                return 8 * 60 * 60 * 1000;
+
+            default:
+                // 1 hour
+                return 1 * 60 * 60 * 1000;
+        }
     }
 
     public int getNumAttendees(int checkedId){
@@ -253,11 +309,12 @@ public class DetailsFragment extends Fragment {
     }
 
     public interface DetailsListener {
-        public void onActivitySet(int activityType);
-        public void onDescriptionSet(String description);
-        public void onNumAttendeesSet(int numAttendees);
-        public void onTimeSet(String time);
-        public void onDateSet(String date);
+        void onActivitySet(int activityType);
+        void onDescriptionSet(String description);
+        void onNumAttendeesSet(int numAttendees);
+        void onTimeSet(String time);
+        void onDateSet(String date);
+        void onDurationSet(long duration);
     }
 
     class StartTimePicker extends DialogFragment implements TimePickerDialog.OnTimeSetListener{
@@ -320,6 +377,8 @@ public class DetailsFragment extends Fragment {
                               int dayOfMonth) {
             // TODO Auto-generated method stub
             updateDateField(year, monthOfYear + 1, dayOfMonth);
+            String dateStr = "" + year + "-" + (monthOfYear + 1) + "-" + dayOfMonth + "";
+            mListener.onDateSet(dateStr);
         }
     }
 
@@ -328,14 +387,12 @@ public class DetailsFragment extends Fragment {
         try {
             SimpleDateFormat initial = new SimpleDateFormat("MM-dd-yyyy", Locale.US);
             Date date = initial.parse("" + startMonth + "-" + startDay + "-" + startYear +"");
-
             SimpleDateFormat finalFormat = new SimpleDateFormat("EEE, MMM dd", Locale.US);
 
             String dateStr = finalFormat.format(date);
 
             Log.d("MainActivity", "date: " + dateStr);
             mTextViewDate.setText(dateStr);
-            mListener.onDateSet(dateStr);
         } catch (ParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

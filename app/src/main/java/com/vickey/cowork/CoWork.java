@@ -16,6 +16,7 @@ public class CoWork implements Serializable {
     Double locationLng;
     String time;
     String date;
+    long duration;
     int activityType;
     String description;
     int finished;
@@ -32,6 +33,7 @@ public class CoWork implements Serializable {
         numAttendees = 0;
         time = "";
         date = "";
+        duration = 1 * 60 * 60 * 1000;
         activityType = 0;
         description = "";
         finished = 0;
@@ -148,5 +150,12 @@ public class CoWork implements Serializable {
 
     public void setAutoCheckin(int autoCheckin) {
         this.autoCheckin = autoCheckin;
+    }
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
+        this.duration = duration;
     }
 }
