@@ -96,6 +96,7 @@ public class HelperClass {
                         coWork.setLocationLng(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
                         coWork.setTime(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_TIME)));
                         coWork.setDate(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DATE)));
+                        coWork.setDuration(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_DURATION)));
                         coWork.setActivityType(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_ACTIVITY_TYPE)));
                         coWork.setDescription(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DESCRIPTION)));
                         coWork.setFinished(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_FINISHED)));
@@ -144,6 +145,7 @@ public class HelperClass {
                         coWork.setLocationLng(cur.getDouble(cur.getColumnIndex(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE)));
                         coWork.setTime(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_TIME)));
                         coWork.setDate(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DATE)));
+                        coWork.setDuration(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_DURATION)));
                         coWork.setActivityType(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_ACTIVITY_TYPE)));
                         coWork.setDescription(cur.getString(cur.getColumnIndex(Constants.MyDatabase.FIELD_DESCRIPTION)));
                         coWork.setFinished(cur.getInt(cur.getColumnIndex(Constants.MyDatabase.FIELD_FINISHED)));
@@ -181,6 +183,7 @@ public class HelperClass {
             values.put(Constants.MyDatabase.FIELD_LOCATION_LONGITUDE, coWork.getLocationLng());
             values.put(Constants.MyDatabase.FIELD_TIME, coWork.getTime());
             values.put(Constants.MyDatabase.FIELD_DATE, coWork.getDate());
+            values.put(Constants.MyDatabase.FIELD_DURATION, coWork.getDuration());
             values.put(Constants.MyDatabase.FIELD_ACTIVITY_TYPE, coWork.getActivityType());
             values.put(Constants.MyDatabase.FIELD_DESCRIPTION, coWork.getDescription());
             values.put(Constants.MyDatabase.FIELD_FINISHED, coWork.getFinished());
