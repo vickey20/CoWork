@@ -141,6 +141,7 @@ public class Constants {
 
     public class TimeAndDate {
         public static final String TIME_FORMAT = "hh:mm a";
-        public static final String DATE_FORMAT = "EEE, MMM dd";
+        public static final String DATE_FORMAT = "yyyy-MM-dd";
+        public static final String DATE_FORMAT_FOR_DISPLAY = "yyyy-MM-dd";
     }
 }

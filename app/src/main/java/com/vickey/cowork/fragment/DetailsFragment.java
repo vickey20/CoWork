@@ -29,6 +29,7 @@ import android.widget.TimePicker;
 
 import com.vickey.cowork.R;
 import com.vickey.cowork.activity.CreateActivity;
+import com.vickey.cowork.utilities.Constants;
 import com.vickey.cowork.utilities.HelperClass;
 
 import java.io.ByteArrayOutputStream;
@@ -176,15 +177,17 @@ public class DetailsFragment extends Fragment {
 
         Calendar c = Calendar.getInstance();
 
-        SimpleDateFormat sdf = new SimpleDateFormat("HH:mm a");
+        SimpleDateFormat sdf = new SimpleDateFormat(Constants.TimeAndDate.TIME_FORMAT);
         String time = sdf.format(c.getTime());
         mTextViewTime.setText(time);
         mListener.onTimeSet(time);
 
-        sdf = new SimpleDateFormat("EEE, MMM dd");
+        sdf = new SimpleDateFormat(Constants.TimeAndDate.DATE_FORMAT_FOR_DISPLAY);
         String date = sdf.format(c.getTime());
         mTextViewDate.setText(date);
-        mListener.onDateSet(date);
+
+        sdf = new SimpleDateFormat(Constants.TimeAndDate.DATE_FORMAT);
+        mListener.onDateSet(sdf.format(c.getTime()));
 
         mScrollView.post(new Runnable() {
             @Override
@@ -287,7 +290,8 @@ public class DetailsFragment extends Fragment {
             mEditTextDescription.setText(description);
             setNumAttendees(numAttendees);
             mTextViewTime.setText(time);
-            mTextViewDate.setText(date);
+            mTextViewDate.setText(updateDateField(date));
+
         }
     }
 
@@ -376,32 +380,34 @@ public class DetailsFragment extends Fragment {
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
             // TODO Auto-generated method stub
-            updateDateField(year, monthOfYear + 1, dayOfMonth);
             String dateStr = "" + year + "-" + (monthOfYear + 1) + "-" + dayOfMonth + "";
+            updateDateField(dateStr);
             mListener.onDateSet(dateStr);
         }
     }
 
-    public void updateDateField(int startYear, int startMonth, int startDay) {
+    public String updateDateField(String dateStr) {
 
         try {
-            SimpleDateFormat initial = new SimpleDateFormat("MM-dd-yyyy", Locale.US);
-            Date date = initial.parse("" + startMonth + "-" + startDay + "-" + startYear +"");
-            SimpleDateFormat finalFormat = new SimpleDateFormat("EEE, MMM dd", Locale.US);
+            SimpleDateFormat initial = new SimpleDateFormat(Constants.TimeAndDate.DATE_FORMAT, Locale.US);
+            Date date = initial.parse(dateStr);
+            SimpleDateFormat finalFormat = new SimpleDateFormat(Constants.TimeAndDate.DATE_FORMAT_FOR_DISPLAY, Locale.US);
 
-            String dateStr = finalFormat.format(date);
+            String finalDate = finalFormat.format(date);
 
-            Log.d("MainActivity", "date: " + dateStr);
-            mTextViewDate.setText(dateStr);
+            Log.d("MainActivity", "date: " + finalDate);
+            mTextViewDate.setText(finalDate);
+            return finalDate;
         } catch (ParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            return dateStr;
         }
     }
 
     public void updateTimeField(Calendar calendar) {
 
-        String time = (String) DateFormat.format("hh:mm a", calendar.getTime());
+        String time = (String) DateFormat.format(Constants.TimeAndDate.TIME_FORMAT, calendar.getTime());
         mTextViewTime.setText(time);
         mListener.onTimeSet(time);
     }

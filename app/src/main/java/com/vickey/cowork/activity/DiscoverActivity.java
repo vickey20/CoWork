@@ -136,7 +136,6 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         super.onResume();
 
         setUpMapIfNeeded();
-        new GetCoWorksTask().execute();
     }
 
     private void performLocationEnabledCheck(){
@@ -248,30 +247,8 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         }
     }
 
-    class GetCoWorksTask extends AsyncTask<String, Void, String>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            showLoadingDialog();
-        }
-
-        @Override
-        protected String doInBackground(String... params) {
-
-            //fetch coworks
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            dismissLoadingDialog();
-        }
-    }
-
-    private void showLoadingDialog(){
-         mLoadingDialog = ProgressDialog.show(DiscoverActivity.this, "Loading Coworks", "Please wait...", false, true);
+    private void showLoadingDialog(String title, String message){
+         mLoadingDialog = ProgressDialog.show(DiscoverActivity.this, title, message, false, true);
     }
 
     private void dismissLoadingDialog(){
@@ -342,7 +319,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     private void handleNewLocation(Location location, boolean moveCamera) {
         Log.d(TAG, "handleNewLocation: " + location.toString());
 
-        showLoadingDialog();
+        showLoadingDialog("Loading CoWorks", "Please wait...");
 
         mLocation = location;
         LatLng position = new LatLng(location.getLatitude(),location.getLongitude());
@@ -541,6 +518,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             @Override
             public void onClick(View v) {
                 if(isUserAlreadyAttendee(coworkBundle) == false) {
+                    showLoadingDialog("Join CoWork", "Adding you to the CoWork...");
                     addUserAsAttendee(coworkBundle.getCoWork().getCoworkID(), HomeActivity.USER_ID);
                     mIsAutoCheckin = autoCheckin.isChecked();
                 } else {
@@ -649,19 +627,20 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
 
         ArrayList<CoworkBundle> coworkBundleArrayList = new ArrayList<>();
 
-        for(int i = 0; i < mCoWorkArrayList.size(); i++) {
-            CoworkBundle coworkBundle = new CoworkBundle();
-            CoWork coWork = mCoWorkArrayList.get(i);
-            if(selectedFilters.contains(coWork.getActivityType())) {
-                coworkBundle.setCoWork(coWork);
-                //coWorks.add(mCoWorkArrayList.get(i));
-                coworkBundle.setUserProfile(getUserProfileFromUserID(coWork.getCreatorID(), mUserProfileArrayList));
-                //userProfiles.add(getUserProfileFromUserID(coWork.getCreatorID(), mUserProfileArrayList));
+        if (mCoWorkArrayList != null && mCoWorkArrayList.size() > 0) {
+            for (int i = 0; i < mCoWorkArrayList.size(); i++) {
+                CoworkBundle coworkBundle = new CoworkBundle();
+                CoWork coWork = mCoWorkArrayList.get(i);
+                if (selectedFilters.contains(coWork.getActivityType())) {
+                    coworkBundle.setCoWork(coWork);
+                    //coWorks.add(mCoWorkArrayList.get(i));
+                    coworkBundle.setUserProfile(getUserProfileFromUserID(coWork.getCreatorID(), mUserProfileArrayList));
+                    //userProfiles.add(getUserProfileFromUserID(coWork.getCreatorID(), mUserProfileArrayList));
 
-                coworkBundleArrayList.add(coworkBundle);
+                    coworkBundleArrayList.add(coworkBundle);
+                }
             }
         }
-
         return coworkBundleArrayList;
     }
 
@@ -721,8 +700,10 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     private void setGeoFenceForCowork(CoWork coWork) {
 
         String dateTime = coWork.getDate() + " " + coWork.getTime();
-        long expirationTime = HelperClass.getTimeInMillis(dateTime, Constants.TimeAndDate.DATE_FORMAT + " " + Constants.TimeAndDate.TIME_FORMAT) - System.currentTimeMillis();
+        long expirationTime = HelperClass.getTimeInMillis(dateTime, Constants.TimeAndDate.DATE_FORMAT + " " + Constants.TimeAndDate.TIME_FORMAT)
+                            + coWork.getDuration() - System.currentTimeMillis();
 
+        Log.d(TAG, "setGeoFenceForCowork:: Expiration duration: " + expirationTime);
         mGeofenceList.add(new Geofence.Builder()
         .setRequestId(String.valueOf(coWork.getCoworkID()))
         .setCircularRegion(coWork.getLocationLat(), coWork.getLocationLng(), 100)
@@ -749,14 +730,16 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
     private PendingIntent getGeofencePendingIntent(CoWork coWork) {
         // Reuse the PendingIntent if we already have it.
         if (mGeofencePendingIntent != null) {
+            Log.d(TAG, "return available pending intent");
             return mGeofencePendingIntent;
         }
-        Intent intent = new Intent(this, CoworkIntentService.class);
-        intent.putExtra(CoworkIntentService.REQUEST_ID, CoworkIntentService.GEOFENCE);
-        intent.putExtra(CoworkIntentService.COWORK, coWork);
+        Intent intent = new Intent("com.vickey.cowork.receiver.ACTION_RECEIVE_GEOFENCE");
+        //Intent intent = new Intent(DiscoverActivity.this, CoworkIntentService.class);
+        //intent.putExtra(CoworkIntentService.REQUEST_ID, Constants.Request.GEOFENCE_REQUEST);
+        //intent.putExtra(CoworkIntentService.COWORK, coWork);
         // We use FLAG_UPDATE_CURRENT so that we get the same pending intent back when
         // calling addGeofences() and removeGeofences().
-        return PendingIntent.getService(this, 0, intent, PendingIntent.
+        return PendingIntent.getBroadcast(DiscoverActivity.this, 0, intent, PendingIntent.
                 FLAG_UPDATE_CURRENT);
     }
 
@@ -800,13 +783,15 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                         setMarkers(mCoWorkArrayList, mUserProfileArrayList, mLocation, false);
                     } else if (requestType == Constants.Request.ADD_USER_AS_ATTENDEE) {
                         Toast.makeText(DiscoverActivity.this, "Successfully added to cowork!", Toast.LENGTH_LONG).show();
-                        dismissLoadingDialog();
                         CoWork coWork = (CoWork) resultData.getSerializable(CoworkIntentService.RESULT);
                         if (mIsAutoCheckin == true) {
                             coWork.setAutoCheckin(1);
                             setGeoFenceForCowork(coWork);
+                            mIsAutoCheckin = false;
                         }
                         mHelper.saveCoworkToDatabase(coWork);
+
+                        dismissLoadingDialog();
                         if(mCoworkDialog != null) {
                             mCoworkDialog.dismiss();
                         }
@@ -815,7 +800,9 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
                 break;
 
             case CoworkIntentService.STATUS_ERROR:
-                Toast.makeText(DiscoverActivity.this, "Error fetching nearby CoWorks. Please try again...", Toast.LENGTH_LONG).show();
+                String errorText = resultData.getString(Intent.EXTRA_TEXT, "Error");
+                Toast.makeText(DiscoverActivity.this, errorText, Toast.LENGTH_LONG).show();
+                dismissLoadingDialog();
                 break;
         }
     }

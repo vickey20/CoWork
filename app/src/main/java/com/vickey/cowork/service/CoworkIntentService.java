@@ -40,7 +40,7 @@ import java.util.List;
 public class CoworkIntentService extends IntentService {
 
     public static final String TAG = CoworkIntentService.class.getSimpleName();
-    public static final String URL = "http://10.0.3.156:8080/CoWork/api/";
+    public static final String URL = "http://192.168.1.252:8080/CoWork/api/";
     public static final String COWORK = "cowork";
     public static final String USER = "user";
     public static final String GEOFENCE = "geofence";
@@ -232,23 +232,25 @@ public class CoworkIntentService extends IntentService {
             Gson gson1 = new Gson();
             CoWork[] coWorks = gson1.fromJson(jsonResponse, CoWork[].class);
 
-            //response data
-            Log.i(TAG,"coworks[]: " + coWorks[0].getCoworkID());
-
-            ArrayList<CoWork> coWorkArrayList = new ArrayList<CoWork>(Arrays.asList(coWorks));
-            Bundle bundle = new Bundle();
-            /* Status Finished */
-            bundle.putSerializable(RESULT, coWorkArrayList);
-            bundle.putInt(REQUEST_TYPE, Constants.Request.GET_NEARBY_COWORKS_FROM_SERVER);
-            mReceiver.send(STATUS_FINISHED, bundle);
-
+            if (coWorks.length == 0) {
+                Bundle bundle = new Bundle();
+                bundle.putString(Intent.EXTRA_TEXT, "Couldn't find any CoWorks nearby!");
+                mReceiver.send(STATUS_ERROR, bundle);
+            } else {
+                ArrayList<CoWork> coWorkArrayList = new ArrayList<CoWork>(Arrays.asList(coWorks));
+                Bundle bundle = new Bundle();
+                /* Status Finished */
+                bundle.putSerializable(RESULT, coWorkArrayList);
+                bundle.putInt(REQUEST_TYPE, Constants.Request.GET_NEARBY_COWORKS_FROM_SERVER);
+                mReceiver.send(STATUS_FINISHED, bundle);
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
 
             Bundle bundle = new Bundle();
             /* Sending error message back to activity */
-            bundle.putString(Intent.EXTRA_TEXT, "Error message here..");
+            bundle.putString(Intent.EXTRA_TEXT, "Error fetching nearby CoWorks. Please try again...");
             mReceiver.send(STATUS_ERROR, bundle);
         } finally {
             if (urlConnection != null) {
@@ -521,8 +523,11 @@ public class CoworkIntentService extends IntentService {
     }
 
     private void handleGeofenceEvent(Intent intent) {
-
+        int coworkID = -1;
         CoWork coWork = (CoWork) intent.getSerializableExtra(COWORK);
+        if(coWork != null) {
+            coworkID = coWork.getCoworkID();
+        }
 
         GeofencingEvent geofencingEvent = GeofencingEvent.fromIntent(intent);
         if (geofencingEvent.hasError()) {
@@ -534,10 +539,11 @@ public class CoworkIntentService extends IntentService {
 
         // Get the transition type.
         int geofenceTransition = geofencingEvent.getGeofenceTransition();
-
+        Log.e(TAG, "geofenceTransition: " + geofenceTransition);
         // Test that the reported transition was of interest.
         if (geofenceTransition == Geofence.GEOFENCE_TRANSITION_ENTER ||
-                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT) {
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_EXIT ||
+                geofenceTransition == Geofence.GEOFENCE_TRANSITION_DWELL) {
 
             // Get the geofences that were triggered. A single event can trigger
             // multiple geofences.
@@ -551,12 +557,14 @@ public class CoworkIntentService extends IntentService {
             );
 
             // Send notification and log the transition details.
-            HelperClass.showNotification(getApplicationContext(), "Auto Check-in", geofenceTransitionDetails, R.drawable.discover_icon, (int) System.currentTimeMillis(), HomeActivity.class);
+            HelperClass.showNotification(getApplicationContext(), "Auto Check-in ID: " + coworkID, geofenceTransitionDetails, R.drawable.discover_icon, (int) System.currentTimeMillis(), HomeActivity.class);
             Log.i(TAG, geofenceTransitionDetails);
         } else {
+            String error = getString(R.string.geofence_transition_invalid_type,
+                    geofenceTransition);
+            HelperClass.showNotification(getApplicationContext(), "Auto Check-in", "Error: " + error, R.drawable.discover_icon, (int) System.currentTimeMillis(), HomeActivity.class);
             // Log the error.
-            Log.e(TAG, getString(R.string.geofence_transition_invalid_type,
-                    geofenceTransition));
+            Log.e(TAG, error);
         }
     }
 
