@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by vikram on 11/19/2015.
@@ -460,6 +461,20 @@ public class HelperClass {
         NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(notificationId, builder.build());
 
+    }
+
+    public static String getDateForDisplay(String dateStr) {
+        try {
+            SimpleDateFormat initial = new SimpleDateFormat(Constants.TimeAndDate.DATE_FORMAT, Locale.US);
+            Date date = initial.parse(dateStr);
+            SimpleDateFormat finalFormat = new SimpleDateFormat(Constants.TimeAndDate.DATE_FORMAT_FOR_DISPLAY, Locale.US);
+
+            String finalDate = finalFormat.format(date);
+            return finalDate;
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return dateStr;
+        }
     }
 
 }

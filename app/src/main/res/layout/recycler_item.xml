@@ -39,6 +39,16 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true" />
 
+            <ImageView
+                android:id="@+id/imageViewMyCreation"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:src="@drawable/my_creation"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentTop="true"
+                android:visibility="gone"
+                android:scaleType="fitXY"/>
+
             <RelativeLayout
                 android:id="@+id/relativeActivityView"
                 android:layout_width="match_parent"

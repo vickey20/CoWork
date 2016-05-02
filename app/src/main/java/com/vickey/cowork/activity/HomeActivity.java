@@ -177,7 +177,7 @@ public class HomeActivity extends AppCompatActivity implements View.OnClickListe
 
         final Dialog dialog = new Dialog(HomeActivity.this);
         dialog.setContentView(R.layout.dialog_cowork_creation);
-        dialog.setTitle("Create Co-Work");
+        //dialog.setTitle("Create Co-Work");
         dialog.setCancelable(true);
 
         TextView reuseCowork = (TextView) dialog.findViewById(R.id.textViewReuseCowork);
