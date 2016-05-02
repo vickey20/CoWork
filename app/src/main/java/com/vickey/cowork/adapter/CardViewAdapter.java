@@ -7,10 +7,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.vickey.cowork.CoWork;
 import com.vickey.cowork.R;
+import com.vickey.cowork.activity.HomeActivity;
 import com.vickey.cowork.utilities.Constants;
 
 import java.util.ArrayList;
@@ -61,6 +63,12 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
         holder.numAttendees.setText(String.valueOf(mCoworkList.get(position).getNumAttendees()));
         holder.time.setText(mCoworkList.get(position).getTime() + " " + mCoworkList.get(position).getDate());
 
+        if (mCoworkList.get(position).getCreatorID().equals(HomeActivity.USER_ID)) {
+            holder.badge.setVisibility(ImageView.VISIBLE);
+        } else {
+            holder.badge.setVisibility(ImageView.GONE);
+        }
+
         if(mDisplayType == DISPLAY_TYPE_ALL) {
             holder.action.setText("Done");
         } else if(mDisplayType == DISPLAY_TYPE_COWORK_HISTORY) {
@@ -105,6 +113,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
 
     class ViewHolder extends RecyclerView.ViewHolder{
         TextView location, activityType, numAttendees, time, action;
+        ImageView badge;
 
         public ViewHolder(View itemView) {
             super(itemView);
@@ -114,6 +123,7 @@ public class CardViewAdapter extends RecyclerView.Adapter<CardViewAdapter.ViewHo
             numAttendees = (TextView) itemView.findViewById(R.id.textViewNumAttendees);
             time = (TextView) itemView.findViewById(R.id.textViewTime);
             action = (TextView) itemView.findViewById(R.id.textViewDone);
+            badge = (ImageView) itemView.findViewById(R.id.imageViewMyCreation);
         }
     }
 }

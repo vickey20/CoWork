@@ -3,16 +3,17 @@
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:elevation="10dp"
-    android:padding="10dp">
+    android:padding="10dp"
+    android:background="@color/white">
 
-    <TextView
+    <!--<TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Create Co-Work"
         android:textSize="20dp"
         android:textColor="#404140"
         android:layout_marginTop="10dp"
-        android:layout_marginBottom="10dp"/>
+        android:layout_marginBottom="10dp"/>-->
 
     <!--<View
         android:layout_width="match_parent"
@@ -26,7 +27,6 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_alignParentBottom="true"
-        android:background="@color/white"
         android:orientation="vertical">
 
         <TextView

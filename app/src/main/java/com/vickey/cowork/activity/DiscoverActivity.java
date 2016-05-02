@@ -23,6 +23,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -490,7 +491,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         location.setText(coworkBundle.getCoWork().getLocationName());
 
         ImageView image = (ImageView) mCoworkDialog.findViewById(R.id.imageView);
-        image.setImageResource(R.mipmap.ic_launcher);
+        image.setImageResource(R.drawable.profile);
 
         TextView nameText = (TextView) mCoworkDialog.findViewById(R.id.name);
         nameText.setText(coworkBundle.getUserProfile().getName());
@@ -508,7 +509,7 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
         time.setText(coworkBundle.getCoWork().getTime());
 
         TextView date = (TextView) mCoworkDialog.findViewById(R.id.textViewDate);
-        date.setText(coworkBundle.getCoWork().getDate());
+        date.setText(HelperClass.getDateForDisplay(coworkBundle.getCoWork().getDate()));
 
         final CheckBox autoCheckin = (CheckBox) mCoworkDialog.findViewById(R.id.checkboxAutoCheckin);
 
@@ -527,7 +528,13 @@ public class DiscoverActivity extends AppCompatActivity implements GoogleMap.OnM
             }
         });
 
+        WindowManager.LayoutParams lp = new WindowManager.LayoutParams();
+        lp.copyFrom(mCoworkDialog.getWindow().getAttributes());
+        lp.width = WindowManager.LayoutParams.MATCH_PARENT;
+        lp.height = WindowManager.LayoutParams.MATCH_PARENT;
         mCoworkDialog.show();
+        mCoworkDialog.getWindow().setAttributes(lp);
+
     }
 
     private boolean isUserAlreadyAttendee(CoworkBundle coworkBundle) {

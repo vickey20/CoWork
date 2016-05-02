@@ -290,7 +290,7 @@ public class DetailsFragment extends Fragment {
             mEditTextDescription.setText(description);
             setNumAttendees(numAttendees);
             mTextViewTime.setText(time);
-            mTextViewDate.setText(updateDateField(date));
+            updateDateField(date);
 
         }
     }
@@ -325,7 +325,6 @@ public class DetailsFragment extends Fragment {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // TODO Auto-generated method stub
 
             Calendar c = Calendar.getInstance();
             int hour = c.get(Calendar.HOUR_OF_DAY);
@@ -340,7 +339,6 @@ public class DetailsFragment extends Fragment {
 
         @Override
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-            // TODO Auto-generated method stub
 
             Calendar calNow = Calendar.getInstance();
             Calendar calSet = (Calendar) calNow.clone();
@@ -363,7 +361,6 @@ public class DetailsFragment extends Fragment {
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
-            // TODO Auto-generated method stub
 
             Calendar c = Calendar.getInstance();
             int startYear = c.get(Calendar.YEAR);
@@ -379,7 +376,6 @@ public class DetailsFragment extends Fragment {
         @Override
         public void onDateSet(DatePicker view, int year, int monthOfYear,
                               int dayOfMonth) {
-            // TODO Auto-generated method stub
             String dateStr = "" + year + "-" + (monthOfYear + 1) + "-" + dayOfMonth + "";
             updateDateField(dateStr);
             mListener.onDateSet(dateStr);
@@ -395,11 +391,9 @@ public class DetailsFragment extends Fragment {
 
             String finalDate = finalFormat.format(date);
 
-            Log.d("MainActivity", "date: " + finalDate);
             mTextViewDate.setText(finalDate);
             return finalDate;
         } catch (ParseException e) {
-            // TODO Auto-generated catch block
             e.printStackTrace();
             return dateStr;
         }
