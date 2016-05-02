@@ -1,48 +1,30 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_height="match_parent"
     android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
     android:orientation="vertical">
 
     <FrameLayout
+        android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:focusableInTouchMode="true"
-        android:id="@+id/map">
-    </FrameLayout>
+        android:layout_height="match_parent"></FrameLayout>
 
     <AutoCompleteTextView
-        android:layout_width="fill_parent"
-        android:layout_height="wrap_content"
-        android:padding="7dp"
-        android:background="#ffffff"
-        android:alpha="0.7"
-        android:layout_marginRight="60dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginBottom="10dp"
-        android:layout_marginTop="15dp"
-        android:hint="Search..."
-        android:inputType="text"
-        android:textSize="16dp"
         android:id="@+id/textViewSearch"
-        android:layout_gravity="center_horizontal|top"
-        android:imeOptions="actionSearch"
-        android:selectAllOnFocus="true"
-        />
-
-    <EditText
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="#ffffff"
+        android:layout_gravity="center_horizontal|top"
+        android:layout_marginBottom="10dp"
+        android:layout_marginLeft="30dp"
+        android:layout_marginRight="60dp"
+        android:layout_marginTop="15dp"
         android:alpha="0.7"
-        android:padding="8dp"
-        android:textSize="15dp"
-        android:ems="10"
-        android:id="@+id/locationNote"
-        android:layout_margin="20dp"
+        android:background="#ffffff"
+        android:hint="Search..."
+        android:imeOptions="actionSearch"
         android:inputType="text"
-        android:hint="Add note"
-        android:visibility="gone"
-        android:layout_gravity="center_horizontal|bottom" />
-
+        android:padding="7dp"
+        android:textSize="16dp" />
 </FrameLayout>

@@ -20,6 +20,7 @@
                 android:id="@+id/imageViewMap"
                 android:layout_width="fill_parent"
                 android:layout_height="200dp"
+                android:src="@drawable/maps_shot"
                 android:scaleType="fitXY"/>
             <TextView
                 android:id="@+id/textViewLocationName"

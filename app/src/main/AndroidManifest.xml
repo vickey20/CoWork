@@ -54,6 +54,7 @@
         <activity
             android:name=".activity.CreateActivity"
             android:label="Create"
+            android:windowSoftInputMode="stateHidden"
             android:screenOrientation="portrait" />
         <activity
             android:name=".activity.DiscoverActivity"
@@ -69,10 +70,17 @@
 
         <service
             android:name=".service.CoworkIntentService"
-            android:exported="false" />
+            android:exported="true" />
 
         <activity android:name=".activity.CoworkHistoryActivity"
             android:label="Timeline"></activity>
+
+        <receiver android:name=".receiver.GeofenceReceiver"
+            android:exported="false">
+            <intent-filter >
+                <action android:name="com.vickey.cowork.receiver.ACTION_RECEIVE_GEOFENCE"/>
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
